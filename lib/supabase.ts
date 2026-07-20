@@ -9,5 +9,7 @@ export const isSupabaseConfigured = Boolean(url && key);
 // project), this client is never actually called — see lib/queries.ts,
 // which falls back to the seed data in lib/data.ts instead.
 export const supabase = isSupabaseConfigured
-  ? createClient(url as string, key as string)
+  ? createClient(url as string, key as string, {
+      db: { schema: "one_alphabet" },
+    })
   : null;
