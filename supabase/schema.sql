@@ -99,3 +99,82 @@ insert into one_alphabet.players (name, rank, league, judged_matches, wins, loss
   ('Marcus Webb', 'AB', 'Two Alphabet League', 9, 18, 9, 'United Kingdom', null),
   ('Anya Sokolova', 'AC', 'Two Alphabet League', 7, 15, 10, 'Poland', null),
   ('Diego Ramirez', 'BA', 'Alphabet League', 2, 6, 4, 'Mexico', null);
+
+-- ── Automatic rank assignment (see 002_rank_assignment.sql for the
+-- standalone version — this is folded in here so a fresh setup gets it
+-- in one pass) ──
+
+create or replace function one_alphabet.rank_to_int(r text) returns bigint
+language plpgsql immutable as $$
+declare
+  result bigint := 0;
+begin
+  for i in 1..length(r) loop
+    result := result * 26 + (ascii(upper(substring(r from i for 1))) - ascii('A') + 1);
+  end loop;
+  return result;
+end;
+$$;
+
+create or replace function one_alphabet.int_to_rank(n bigint) returns text
+language plpgsql immutable as $$
+declare
+  result text := '';
+  num bigint := n;
+begin
+  while num > 0 loop
+    num := num - 1;
+    result := chr(65 + (num % 26)) || result;
+    num := num / 26;
+  end loop;
+  return result;
+end;
+$$;
+
+create or replace function one_alphabet.next_rank() returns text
+language plpgsql as $$
+declare
+  max_int bigint;
+begin
+  select coalesce(max(one_alphabet.rank_to_int(rank)), 0) into max_int from one_alphabet.players;
+  return one_alphabet.int_to_rank(max_int + 1);
+end;
+$$;
+
+alter table one_alphabet.players alter column rank drop not null;
+
+create or replace function one_alphabet.assign_next_rank() returns trigger
+language plpgsql as $$
+begin
+  if new.rank is null then
+    new.rank := one_alphabet.next_rank();
+  end if;
+  if new.league is null then
+    new.league := 'Alphabet League';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger trg_assign_rank
+  before insert on one_alphabet.players
+  for each row execute function one_alphabet.assign_next_rank();
+
+create or replace function one_alphabet.register_player(p_name text, p_country text)
+returns one_alphabet.players
+language plpgsql
+security definer
+set search_path = one_alphabet
+as $$
+declare
+  new_row one_alphabet.players;
+begin
+  insert into one_alphabet.players (name, country)
+  values (p_name, p_country)
+  returning * into new_row;
+  return new_row;
+end;
+$$;
+
+revoke all on function one_alphabet.register_player(text, text) from public;
+grant execute on function one_alphabet.register_player(text, text) to anon, authenticated;

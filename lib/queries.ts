@@ -95,14 +95,33 @@ export async function submitSignup(input: {
         "Sign-ups aren't connected to a live database yet — this form will start saving real registrations once Supabase is wired up.",
     };
   }
-  const { error } = await supabase.from("signups").insert({
+
+  // Log the raw sign-up (keeps email private — this table isn't public-readable).
+  const { error: signupError } = await supabase.from("signups").insert({
     name: input.name,
     email: input.email,
     role: input.role,
     country: input.country,
   });
-  if (error) {
+  if (signupError) {
     return { ok: false, message: "Something went wrong. Try again in a moment." };
   }
-  return { ok: true, message: "Registered." };
+
+  // Everyone — player or judge — starts as a ranked player at the bottom
+  // of the ladder. Rank is assigned server-side; the client never controls it.
+  const { data: player, error: playerError } = await supabase.rpc(
+    "register_player",
+    { p_name: input.name, p_country: input.country }
+  );
+  if (playerError || !player) {
+    return {
+      ok: true,
+      message: "Registered — your rank will be assigned shortly.",
+    };
+  }
+
+  return {
+    ok: true,
+    message: `Registered. You're ranked ${player.rank}.`,
+  };
 }
