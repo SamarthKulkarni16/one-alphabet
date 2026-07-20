@@ -1,0 +1,68 @@
+@import "tailwindcss";
+@import "@fontsource/fraunces/400.css";
+@import "@fontsource/fraunces/500.css";
+@import "@fontsource/fraunces/600.css";
+@import "@fontsource/fraunces/700.css";
+@import "@fontsource/fraunces/400-italic.css";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+:root {
+  --paper: #f7f6f2;
+  --paper-dim: #efeee8;
+  --ink: #14130f;
+  --ink-soft: #4a4842;
+  --rule: #c9c6bc;
+  --seal: #a32020;
+  --seal-dim: #a3202014;
+  --brass: #8a7239;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-dim: var(--paper-dim);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-rule: var(--rule);
+  --color-seal: var(--seal);
+  --color-seal-dim: var(--seal-dim);
+  --color-brass: var(--brass);
+  --font-display: "Fraunces", serif;
+  --font-body: "IBM Plex Sans", sans-serif;
+  --font-data: "IBM Plex Mono", monospace;
+}
+
+* {
+  scrollbar-color: var(--ink-soft) var(--paper-dim);
+}
+
+html {
+  background: var(--paper);
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+
+::selection {
+  background: var(--seal);
+  color: var(--paper);
+}
+
+:focus-visible {
+  outline: 2px solid var(--seal);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
