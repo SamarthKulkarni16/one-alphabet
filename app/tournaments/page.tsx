@@ -1,4 +1,4 @@
-import { tournaments } from "@/lib/data";
+import { getTournaments } from "@/lib/queries";
 
 export const metadata = { title: "Tournaments | One Alphabet" };
 
@@ -8,7 +8,8 @@ const statusColor: Record<string, string> = {
   completed: "text-ink-soft border-rule",
 };
 
-export default function TournamentsPage() {
+export default async function TournamentsPage() {
+  const tournaments = await getTournaments();
   const flagship = tournaments.filter((t) => t.type !== "emergency");
   const emergency = tournaments.filter((t) => t.type === "emergency");
 

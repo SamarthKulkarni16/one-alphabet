@@ -1,8 +1,13 @@
-import { matches, getPlayer } from "@/lib/data";
+import { getMatches, getPlayerLookup } from "@/lib/queries";
 
 export const metadata = { title: "Archive | One Alphabet" };
 
-export default function ArchivePage() {
+export default async function ArchivePage() {
+  const [matches, playerLookup] = await Promise.all([
+    getMatches(),
+    getPlayerLookup(),
+  ]);
+  const getPlayer = (id: string) => playerLookup.get(id);
   return (
     <div className="max-w-5xl mx-auto px-6 py-20">
       <p className="font-data text-[13px] uppercase tracking-wider text-seal mb-4">

@@ -1,8 +1,13 @@
 import Link from "next/link";
 import AlphabetLadder from "@/components/AlphabetLadder";
-import { matches, tournaments, players } from "@/lib/data";
+import { getMatches, getTournaments, getPlayers } from "@/lib/queries";
 
-export default function Home() {
+export default async function Home() {
+  const [matches, tournaments, players] = await Promise.all([
+    getMatches(),
+    getTournaments(),
+    getPlayers(),
+  ]);
   const featured = matches[0];
   const activeTournaments = tournaments.filter((t) => t.status === "active");
   const ace = players.find((p) => p.rank === "A");

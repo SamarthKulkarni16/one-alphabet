@@ -1,15 +1,27 @@
 "use client";
 
 import { useState } from "react";
+import { submitSignup } from "@/lib/queries";
 
 export default function JoinPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [message, setMessage] = useState("");
+  const [pending, setPending] = useState(false);
   const [role, setRole] = useState<"player" | "judge">("player");
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    // Pass 2: POST to Supabase `signups` table.
+    setPending(true);
+    const form = new FormData(e.currentTarget);
+    const result = await submitSignup({
+      name: String(form.get("name") ?? ""),
+      email: String(form.get("email") ?? ""),
+      country: String(form.get("country") ?? ""),
+      role,
+    });
+    setMessage(result.message);
     setSubmitted(true);
+    setPending(false);
   }
 
   return (
@@ -25,11 +37,10 @@ export default function JoinPage() {
 
       {submitted ? (
         <div className="border border-seal p-8">
-          <p className="font-display text-2xl mb-2 text-seal">Registered.</p>
+          <p className="font-display text-2xl mb-2 text-seal">{message}</p>
           <p className="text-ink-soft text-[15px]">
             You&rsquo;ll hear from us once the first open league forms in
-            your region. Sign-ups aren&rsquo;t stored live yet &mdash; this
-            form goes to the real database once accounts are wired up.
+            your region.
           </p>
         </div>
       ) : (
@@ -57,6 +68,7 @@ export default function JoinPage() {
             </span>
             <input
               required
+              name="name"
               type="text"
               className="w-full bg-transparent border-b border-rule py-3 mt-2 focus:border-seal outline-none"
             />
@@ -68,6 +80,7 @@ export default function JoinPage() {
             </span>
             <input
               required
+              name="email"
               type="email"
               className="w-full bg-transparent border-b border-rule py-3 mt-2 focus:border-seal outline-none"
             />
@@ -79,6 +92,7 @@ export default function JoinPage() {
             </span>
             <input
               required
+              name="country"
               type="text"
               className="w-full bg-transparent border-b border-rule py-3 mt-2 focus:border-seal outline-none"
             />
@@ -94,9 +108,10 @@ export default function JoinPage() {
 
           <button
             type="submit"
-            className="font-data text-[13px] uppercase tracking-wider bg-ink text-paper px-8 py-4 hover:bg-seal transition-colors"
+            disabled={pending}
+            className="font-data text-[13px] uppercase tracking-wider bg-ink text-paper px-8 py-4 hover:bg-seal transition-colors disabled:opacity-50"
           >
-            Register as {role}
+            {pending ? "Registering\u2026" : `Register as ${role}`}
           </button>
         </form>
       )}

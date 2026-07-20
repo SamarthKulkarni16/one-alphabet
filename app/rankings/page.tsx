@@ -1,4 +1,4 @@
-import { players } from "@/lib/data";
+import { getPlayers } from "@/lib/queries";
 import { League } from "@/lib/types";
 
 export const metadata = { title: "Rankings | One Alphabet" };
@@ -15,7 +15,8 @@ function rankValue(rank: string) {
   return 200 + (rank.charCodeAt(0) - 65) * 26 + (rank.charCodeAt(1) - 65);
 }
 
-export default function RankingsPage() {
+export default async function RankingsPage() {
+  const players = await getPlayers();
   return (
     <div className="max-w-5xl mx-auto px-6 py-20">
       <p className="font-data text-[13px] uppercase tracking-wider text-seal mb-4">
