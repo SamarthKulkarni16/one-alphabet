@@ -52,7 +52,7 @@ export default async function PlayerProfilePage({
           At this rank for <TimeAtRank since={player.rankSince} />
           {player.country && ` \u00b7 ${player.country}`}
         </p>
-        <div className="grid grid-cols-3 gap-4 font-data text-[13px] text-ink-soft border-t border-rule pt-6">
+        <div className="grid grid-cols-2 gap-4 font-data text-[13px] text-ink-soft border-t border-rule pt-6">
           <div>
             <p className="text-ink text-lg">
               {player.wins}&ndash;{player.losses}
@@ -62,12 +62,6 @@ export default async function PlayerProfilePage({
           <div>
             <p className="text-ink text-lg">{player.judgedMatches}</p>
             <p>judged</p>
-          </div>
-          <div>
-            <p className="text-ink text-lg">
-              {player.judgedMatches >= 10 ? "Yes" : "Not yet"}
-            </p>
-            <p>flagship-eligible</p>
           </div>
         </div>
       </div>
