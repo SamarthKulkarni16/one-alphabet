@@ -252,11 +252,12 @@ export async function markBattleLive(battleId: string): Promise<void> {
 
 export async function endBattle(battleId: string): Promise<void> {
   if (!isSupabaseConfigured || !supabase) return;
-  await supabase
-    .from("battles")
-    .update({ status: "completed", ended_at: new Date().toISOString() })
-    .eq("id", battleId)
-    .neq("status", "completed");
+  await supabase.rpc("complete_battle", { battle_id: battleId });
+}
+
+export async function setBattleTopic(battleId: string, topic: string): Promise<void> {
+  if (!isSupabaseConfigured || !supabase) return;
+  await supabase.rpc("set_battle_topic", { battle_id: battleId, new_topic: topic });
 }
 
 export function subscribeToBattle(

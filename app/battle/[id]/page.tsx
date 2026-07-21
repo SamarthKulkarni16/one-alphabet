@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { getMyPlayer, getPlayerById } from "@/lib/queries";
-import { getBattle, markBattleLive, endBattle, subscribeToBattle } from "@/lib/battle";
+import { getBattle, markBattleLive, endBattle, subscribeToBattle, setBattleTopic } from "@/lib/battle";
 import { Player, Battle } from "@/lib/types";
+import TextBattle from "@/components/TextBattle";
 
 export default function BattleRoomPage() {
   const { id } = useParams<{ id: string }>();
@@ -14,6 +15,7 @@ export default function BattleRoomPage() {
   const [battle, setBattle] = useState<Battle | null>(null);
   const [opponent, setOpponent] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);
+  const [topicDraft, setTopicDraft] = useState("");
 
   useEffect(() => {
     getMyPlayer().then(setProfile);
@@ -70,12 +72,32 @@ export default function BattleRoomPage() {
         {battle.status}
       </p>
 
-      <div className="border border-rule p-8 mb-8">
+      <div className={battle.status === "live" && battle.format === "text" ? "" : "border border-rule p-8 mb-8"}>
         {battle.status === "waiting" && (
           <div>
-            <p className="text-ink-soft text-[15px] mb-6">
+            <p className="text-ink-soft text-[15px] mb-4">
               Both players need to confirm ready before this goes live.
+              {battle.format === "text" && " Optionally set a topic first — either of you can."}
             </p>
+            {battle.format === "text" && (
+              <div className="flex gap-3 mb-6">
+                <input
+                  type="text"
+                  value={topicDraft}
+                  onChange={(e) => setTopicDraft(e.target.value)}
+                  placeholder={battle.topic ?? "e.g. Should remote work be the default?"}
+                  className="flex-1 bg-transparent border-b border-rule py-2 focus:border-seal outline-none text-[15px]"
+                />
+                <button
+                  onClick={() => {
+                    if (topicDraft.trim()) setBattleTopic(battle.id, topicDraft.trim());
+                  }}
+                  className="font-data text-[12px] uppercase tracking-wider text-ink-soft hover:text-seal transition-colors"
+                >
+                  Set
+                </button>
+              </div>
+            )}
             <button
               onClick={() => markBattleLive(battle.id)}
               className="font-data text-[13px] uppercase tracking-wider bg-ink text-paper px-8 py-4 hover:bg-seal transition-colors"
@@ -84,13 +106,14 @@ export default function BattleRoomPage() {
             </button>
           </div>
         )}
-        {battle.status === "live" && (
-          <div>
+        {battle.status === "live" && battle.format === "text" && (
+          <TextBattle battle={battle} profile={profile} opponent={opponent} />
+        )}
+        {battle.status === "live" && battle.format === "audio" && (
+          <div className="border border-rule p-8">
             <p className="font-display text-2xl mb-2">This battle is live.</p>
             <p className="text-ink-soft text-[15px] mb-6">
-              The {battle.format} battle room itself is the next thing being
-              built &mdash; this screen will become the live{" "}
-              {battle.format === "text" ? "text exchange" : "audio call"}.
+              The audio call itself is next up, once Daily.co is wired in.
             </p>
             <button
               onClick={() => endBattle(battle.id)}
