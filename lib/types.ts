@@ -42,6 +42,7 @@ export interface Match {
   aiSummary: string;
   videoUrl?: string;
   transcriptUrl?: string;
+  transcript?: string;
 }
 
 export interface Tournament {

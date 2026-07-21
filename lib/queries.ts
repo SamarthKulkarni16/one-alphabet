@@ -57,8 +57,38 @@ export async function getMatches(): Promise<Match[]> {
       aiSummary: m.ai_summary ?? "",
       videoUrl: m.video_url ?? undefined,
       transcriptUrl: m.transcript_url ?? undefined,
+      transcript: m.transcript ?? undefined,
     })
   );
+}
+
+export async function getMatchById(id: string): Promise<Match | null> {
+  if (!isSupabaseConfigured || !supabase) {
+    return mockMatches.find((m) => m.id === id) ?? null;
+  }
+  const { data, error } = await supabase
+    .from("matches")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error || !data) return null;
+  return {
+    id: data.id,
+    topic: data.topic,
+    playerAId: data.player_a_id,
+    playerBId: data.player_b_id,
+    judgeId: data.judge_id,
+    refereeId: data.referee_id,
+    tournament: data.tournament_id,
+    league: data.league,
+    winnerId: data.winner_id,
+    date: data.match_date,
+    tags: data.tags ?? [],
+    aiSummary: data.ai_summary ?? "",
+    videoUrl: data.video_url ?? undefined,
+    transcriptUrl: data.transcript_url ?? undefined,
+    transcript: data.transcript ?? undefined,
+  };
 }
 
 export async function getTournaments(): Promise<Tournament[]> {

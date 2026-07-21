@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getMatches, getPlayerLookup } from "@/lib/queries";
 
 export const metadata = { title: "Archive | One Alphabet" };
@@ -47,11 +48,16 @@ export default async function ArchivePage() {
           const judge = getPlayer(m.judgeId);
           const winner = m.winnerId ? getPlayer(m.winnerId) : null;
           return (
-            <div key={m.id} className="bg-paper p-8 relative overflow-hidden">
+            <Link
+              key={m.id}
+              href={`/matches/${m.id}`}
+              className="block bg-paper p-8 relative overflow-hidden hover:bg-rule/10 transition-colors"
+            >
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
                 <div>
                   <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-2">
-                    {m.tournament} &middot; {m.league}
+                    {m.tournament ? `${m.tournament} \u00b7 ` : ""}
+                    {m.league}
                   </p>
                   <h2 className="font-display text-2xl max-w-xl">{m.topic}</h2>
                 </div>
@@ -65,7 +71,9 @@ export default async function ArchivePage() {
               </div>
 
               <p className="text-ink-soft text-[15px] leading-relaxed mb-5 max-w-2xl">
-                {m.aiSummary}
+                {m.aiSummary || (
+                  <span className="italic">Awaiting AI judgment.</span>
+                )}
               </p>
 
               <div className="flex flex-wrap items-center gap-x-8 gap-y-3 mb-5 font-data text-[12px] text-ink-soft">
@@ -85,7 +93,7 @@ export default async function ArchivePage() {
                 {!m.winnerId && (
                   <span className="text-ink-soft italic">undecided</span>
                 )}
-                <span>Judged by {judge?.name}</span>
+                {judge && <span>Judged by {judge.name}</span>}
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -100,9 +108,9 @@ export default async function ArchivePage() {
               </div>
 
               <span className="absolute top-6 right-8 font-display text-seal text-xs uppercase tracking-widest border border-seal rounded-full w-16 h-16 flex items-center justify-center rotate-12 opacity-70 select-none hidden md:flex">
-                Case {m.id.replace("m", "")}
+                Case {m.id.slice(0, 4)}
               </span>
-            </div>
+            </Link>
           );
         })}
       </div>

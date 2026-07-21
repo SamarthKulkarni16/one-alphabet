@@ -125,7 +125,7 @@ export default function TextBattle({
               handleSend();
             }
           }}
-          placeholder="Make your case."
+          placeholder=""
           rows={2}
           className="flex-1 bg-transparent border border-rule p-3 text-[15px] focus:border-seal outline-none resize-none"
         />
