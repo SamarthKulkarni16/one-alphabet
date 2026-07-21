@@ -47,6 +47,8 @@ create table if not exists one_alphabet.battles (
 );
 
 alter table one_alphabet.battle_challenges
+  drop constraint if exists battle_challenges_battle_id_fkey;
+alter table one_alphabet.battle_challenges
   add constraint battle_challenges_battle_id_fkey
   foreign key (battle_id) references one_alphabet.battles(id) on delete set null;
 
@@ -143,6 +145,7 @@ alter table one_alphabet.battles enable row level security;
 alter table one_alphabet.battle_turns enable row level security;
 
 -- Queue: a player can see and manage only their own queue entry.
+drop policy if exists "own queue entry" on one_alphabet.battle_queue;
 create policy "own queue entry" on one_alphabet.battle_queue
   for all using (
     player_id in (select id from one_alphabet.players where user_id = auth.uid())
@@ -150,17 +153,20 @@ create policy "own queue entry" on one_alphabet.battle_queue
 
 -- Challenges: visible to challenger or opponent; only the challenger can
 -- create one; either side can update (cancel / decline).
+drop policy if exists "read own challenges" on one_alphabet.battle_challenges;
 create policy "read own challenges" on one_alphabet.battle_challenges
   for select using (
     challenger_id in (select id from one_alphabet.players where user_id = auth.uid())
     or opponent_id in (select id from one_alphabet.players where user_id = auth.uid())
   );
 
+drop policy if exists "create challenge as self" on one_alphabet.battle_challenges;
 create policy "create challenge as self" on one_alphabet.battle_challenges
   for insert with check (
     challenger_id in (select id from one_alphabet.players where user_id = auth.uid())
   );
 
+drop policy if exists "update own challenges" on one_alphabet.battle_challenges;
 create policy "update own challenges" on one_alphabet.battle_challenges
   for update using (
     challenger_id in (select id from one_alphabet.players where user_id = auth.uid())
@@ -168,12 +174,14 @@ create policy "update own challenges" on one_alphabet.battle_challenges
   );
 
 -- Battles: only the two participants can read or update (e.g. mark live/completed).
+drop policy if exists "participants read battle" on one_alphabet.battles;
 create policy "participants read battle" on one_alphabet.battles
   for select using (
     player_a_id in (select id from one_alphabet.players where user_id = auth.uid())
     or player_b_id in (select id from one_alphabet.players where user_id = auth.uid())
   );
 
+drop policy if exists "participants update battle" on one_alphabet.battles;
 create policy "participants update battle" on one_alphabet.battles
   for update using (
     player_a_id in (select id from one_alphabet.players where user_id = auth.uid())
@@ -182,6 +190,7 @@ create policy "participants update battle" on one_alphabet.battles
 
 -- Turns: only battle participants can read or write, and only into a
 -- battle they're part of.
+drop policy if exists "participants read turns" on one_alphabet.battle_turns;
 create policy "participants read turns" on one_alphabet.battle_turns
   for select using (
     battle_id in (
@@ -191,6 +200,7 @@ create policy "participants read turns" on one_alphabet.battle_turns
     )
   );
 
+drop policy if exists "participants write turns" on one_alphabet.battle_turns;
 create policy "participants write turns" on one_alphabet.battle_turns
   for insert with check (
     player_id in (select id from one_alphabet.players where user_id = auth.uid())
@@ -209,6 +219,26 @@ grant select, insert on one_alphabet.battle_turns to authenticated;
 grant execute on function one_alphabet.accept_challenge(uuid) to authenticated;
 
 -- ── Realtime: turn on replication for live updates ──
-alter publication supabase_realtime add table one_alphabet.battle_turns;
-alter publication supabase_realtime add table one_alphabet.battles;
-alter publication supabase_realtime add table one_alphabet.battle_challenges;
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'one_alphabet' and tablename = 'battle_turns'
+  ) then
+    alter publication supabase_realtime add table one_alphabet.battle_turns;
+  end if;
+
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'one_alphabet' and tablename = 'battles'
+  ) then
+    alter publication supabase_realtime add table one_alphabet.battles;
+  end if;
+
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'one_alphabet' and tablename = 'battle_challenges'
+  ) then
+    alter publication supabase_realtime add table one_alphabet.battle_challenges;
+  end if;
+end $$;
