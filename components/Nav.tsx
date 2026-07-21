@@ -7,6 +7,7 @@ import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 const links = [
   { href: "/constitution", label: "Constitution" },
   { href: "/rankings", label: "Rankings" },
+  { href: "/battle", label: "Battle" },
   { href: "/history", label: "History" },
   { href: "/archive", label: "Archive" },
   { href: "/tournaments", label: "Tournaments" },

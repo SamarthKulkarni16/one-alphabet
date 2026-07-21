@@ -1,0 +1,331 @@
+import { supabase, isSupabaseConfigured } from "./supabase";
+import { Battle, BattleChallenge, BattleFormat, BattleTurn } from "./types";
+
+// This module assumes the caller is signed in (has a Player row via
+// getMyPlayer()). Every function needs the caller's player id passed in —
+// callers already have it from getMyPlayer() so we don't refetch here.
+
+function mapBattle(b: any): Battle {
+  return {
+    id: b.id,
+    format: b.format,
+    playerAId: b.player_a_id,
+    playerBId: b.player_b_id,
+    status: b.status,
+    topic: b.topic,
+    durationSeconds: b.duration_seconds,
+    startedAt: b.started_at,
+    endedAt: b.ended_at,
+    dailyRoomName: b.daily_room_name,
+    dailyRoomUrl: b.daily_room_url,
+    recordingUrl: b.recording_url,
+    transcript: b.transcript,
+    createdAt: b.created_at,
+  };
+}
+
+function mapChallenge(c: any): BattleChallenge {
+  return {
+    id: c.id,
+    challengerId: c.challenger_id,
+    opponentId: c.opponent_id,
+    format: c.format,
+    status: c.status,
+    battleId: c.battle_id,
+    createdAt: c.created_at,
+    respondedAt: c.responded_at,
+  };
+}
+
+function mapTurn(t: any): BattleTurn {
+  return {
+    id: t.id,
+    battleId: t.battle_id,
+    playerId: t.player_id,
+    content: t.content,
+    createdAt: t.created_at,
+  };
+}
+
+// ── Queue ──
+
+export async function joinQueue(
+  playerId: string,
+  format: BattleFormat
+): Promise<{ ok: boolean; message?: string }> {
+  if (!isSupabaseConfigured || !supabase) return { ok: false, message: "Not connected." };
+  const { error } = await supabase
+    .from("battle_queue")
+    .upsert({ player_id: playerId, format }, { onConflict: "player_id,format" });
+  if (error) return { ok: false, message: error.message };
+  return { ok: true };
+}
+
+export async function leaveQueue(
+  playerId: string,
+  format: BattleFormat
+): Promise<void> {
+  if (!isSupabaseConfigured || !supabase) return;
+  await supabase
+    .from("battle_queue")
+    .delete()
+    .eq("player_id", playerId)
+    .eq("format", format);
+}
+
+export async function isInQueue(
+  playerId: string,
+  format: BattleFormat
+): Promise<boolean> {
+  if (!isSupabaseConfigured || !supabase) return false;
+  const { data } = await supabase
+    .from("battle_queue")
+    .select("id")
+    .eq("player_id", playerId)
+    .eq("format", format)
+    .maybeSingle();
+  return Boolean(data);
+}
+
+// Call this right after joinQueue() and while waiting on the "finding an
+// opponent" screen. Polls rather than using realtime, since a freshly
+// matched battle could land the caller in either player_a_id or
+// player_b_id and a single postgres_changes filter can't express OR.
+export function pollForMatch(
+  playerId: string,
+  format: BattleFormat,
+  since: string,
+  onMatched: (battle: Battle) => void
+): () => void {
+  let cancelled = false;
+  const interval = setInterval(async () => {
+    if (cancelled || !supabase) return;
+    const { data } = await supabase
+      .from("battles")
+      .select("*")
+      .eq("format", format)
+      .gte("created_at", since)
+      .or(`player_a_id.eq.${playerId},player_b_id.eq.${playerId}`)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (data && !cancelled) {
+      cancelled = true;
+      clearInterval(interval);
+      onMatched(mapBattle(data));
+    }
+  }, 2000);
+  return () => {
+    cancelled = true;
+    clearInterval(interval);
+  };
+}
+
+// ── Challenges ──
+
+export async function sendChallenge(
+  challengerId: string,
+  opponentId: string,
+  format: BattleFormat
+): Promise<{ ok: boolean; message?: string }> {
+  if (!isSupabaseConfigured || !supabase) return { ok: false, message: "Not connected." };
+  const { error } = await supabase
+    .from("battle_challenges")
+    .insert({ challenger_id: challengerId, opponent_id: opponentId, format });
+  if (error) return { ok: false, message: error.message };
+  return { ok: true };
+}
+
+export async function getMyChallenges(
+  playerId: string
+): Promise<{ incoming: BattleChallenge[]; outgoing: BattleChallenge[] }> {
+  if (!isSupabaseConfigured || !supabase) return { incoming: [], outgoing: [] };
+  const { data } = await supabase
+    .from("battle_challenges")
+    .select("*")
+    .or(`challenger_id.eq.${playerId},opponent_id.eq.${playerId}`)
+    .eq("status", "pending")
+    .order("created_at", { ascending: false });
+  const all = (data ?? []).map(mapChallenge);
+  return {
+    incoming: all.filter((c) => c.opponentId === playerId),
+    outgoing: all.filter((c) => c.challengerId === playerId),
+  };
+}
+
+export async function acceptChallenge(
+  challengeId: string
+): Promise<{ ok: boolean; battleId?: string; message?: string }> {
+  if (!isSupabaseConfigured || !supabase) return { ok: false, message: "Not connected." };
+  const { data, error } = await supabase.rpc("accept_challenge", {
+    challenge_id: challengeId,
+  });
+  if (error || !data) return { ok: false, message: error?.message ?? "Could not accept." };
+  return { ok: true, battleId: data as string };
+}
+
+export async function declineChallenge(challengeId: string): Promise<void> {
+  if (!isSupabaseConfigured || !supabase) return;
+  await supabase
+    .from("battle_challenges")
+    .update({ status: "declined", responded_at: new Date().toISOString() })
+    .eq("id", challengeId);
+}
+
+export async function cancelChallenge(challengeId: string): Promise<void> {
+  if (!isSupabaseConfigured || !supabase) return;
+  await supabase
+    .from("battle_challenges")
+    .update({ status: "cancelled", responded_at: new Date().toISOString() })
+    .eq("id", challengeId);
+}
+
+// Realtime: fires whenever a challenge you're the opponent on arrives.
+export function subscribeToIncomingChallenges(
+  playerId: string,
+  onIncoming: (challenge: BattleChallenge) => void
+): () => void {
+  if (!supabase) return () => {};
+  const channel = supabase
+    .channel(`incoming-challenges-${playerId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "one_alphabet",
+        table: "battle_challenges",
+        filter: `opponent_id=eq.${playerId}`,
+      },
+      (payload) => onIncoming(mapChallenge(payload.new))
+    )
+    .subscribe();
+  return () => {
+    supabase!.removeChannel(channel);
+  };
+}
+
+// Realtime: fires when a challenge you sent gets accepted/declined.
+export function subscribeToOutgoingChallengeUpdates(
+  playerId: string,
+  onUpdate: (challenge: BattleChallenge) => void
+): () => void {
+  if (!supabase) return () => {};
+  const channel = supabase
+    .channel(`outgoing-challenges-${playerId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "one_alphabet",
+        table: "battle_challenges",
+        filter: `challenger_id=eq.${playerId}`,
+      },
+      (payload) => onUpdate(mapChallenge(payload.new))
+    )
+    .subscribe();
+  return () => {
+    supabase!.removeChannel(channel);
+  };
+}
+
+// ── Battle ──
+
+export async function getBattle(battleId: string): Promise<Battle | null> {
+  if (!isSupabaseConfigured || !supabase) return null;
+  const { data, error } = await supabase
+    .from("battles")
+    .select("*")
+    .eq("id", battleId)
+    .maybeSingle();
+  if (error || !data) return null;
+  return mapBattle(data);
+}
+
+export async function markBattleLive(battleId: string): Promise<void> {
+  if (!isSupabaseConfigured || !supabase) return;
+  await supabase
+    .from("battles")
+    .update({ status: "live", started_at: new Date().toISOString() })
+    .eq("id", battleId)
+    .eq("status", "waiting"); // no-op if the other player already flipped it
+}
+
+export async function endBattle(battleId: string): Promise<void> {
+  if (!isSupabaseConfigured || !supabase) return;
+  await supabase
+    .from("battles")
+    .update({ status: "completed", ended_at: new Date().toISOString() })
+    .eq("id", battleId)
+    .neq("status", "completed");
+}
+
+export function subscribeToBattle(
+  battleId: string,
+  onChange: (battle: Battle) => void
+): () => void {
+  if (!supabase) return () => {};
+  const channel = supabase
+    .channel(`battle-${battleId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "one_alphabet",
+        table: "battles",
+        filter: `id=eq.${battleId}`,
+      },
+      (payload) => onChange(mapBattle(payload.new))
+    )
+    .subscribe();
+  return () => {
+    supabase!.removeChannel(channel);
+  };
+}
+
+// ── Text battle turns ──
+
+export async function getTurns(battleId: string): Promise<BattleTurn[]> {
+  if (!isSupabaseConfigured || !supabase) return [];
+  const { data } = await supabase
+    .from("battle_turns")
+    .select("*")
+    .eq("battle_id", battleId)
+    .order("created_at", { ascending: true });
+  return (data ?? []).map(mapTurn);
+}
+
+export async function sendTurn(
+  battleId: string,
+  playerId: string,
+  content: string
+): Promise<{ ok: boolean; message?: string }> {
+  if (!isSupabaseConfigured || !supabase) return { ok: false, message: "Not connected." };
+  const { error } = await supabase
+    .from("battle_turns")
+    .insert({ battle_id: battleId, player_id: playerId, content });
+  if (error) return { ok: false, message: error.message };
+  return { ok: true };
+}
+
+export function subscribeToTurns(
+  battleId: string,
+  onTurn: (turn: BattleTurn) => void
+): () => void {
+  if (!supabase) return () => {};
+  const channel = supabase
+    .channel(`turns-${battleId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "one_alphabet",
+        table: "battle_turns",
+        filter: `battle_id=eq.${battleId}`,
+      },
+      (payload) => onTurn(mapTurn(payload.new))
+    )
+    .subscribe();
+  return () => {
+    supabase!.removeChannel(channel);
+  };
+}

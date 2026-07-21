@@ -53,3 +53,48 @@ export interface Tournament {
   dates: string;
   description: string;
 }
+
+export type BattleFormat = "text" | "audio";
+export type BattleStatus = "waiting" | "live" | "completed" | "abandoned";
+export type ChallengeStatus =
+  | "pending"
+  | "accepted"
+  | "declined"
+  | "cancelled"
+  | "expired";
+
+export interface Battle {
+  id: string;
+  format: BattleFormat;
+  playerAId: string;
+  playerBId: string;
+  status: BattleStatus;
+  topic: string | null;
+  durationSeconds: number;
+  startedAt: string | null;
+  endedAt: string | null;
+  dailyRoomName: string | null;
+  dailyRoomUrl: string | null;
+  recordingUrl: string | null;
+  transcript: string | null;
+  createdAt: string;
+}
+
+export interface BattleChallenge {
+  id: string;
+  challengerId: string;
+  opponentId: string;
+  format: BattleFormat;
+  status: ChallengeStatus;
+  battleId: string | null;
+  createdAt: string;
+  respondedAt: string | null;
+}
+
+export interface BattleTurn {
+  id: string;
+  battleId: string;
+  playerId: string;
+  content: string;
+  createdAt: string;
+}

@@ -1,0 +1,318 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { getMyPlayer, getPlayers } from "@/lib/queries";
+import {
+  joinQueue,
+  leaveQueue,
+  isInQueue,
+  pollForMatch,
+  sendChallenge,
+  getMyChallenges,
+  acceptChallenge,
+  declineChallenge,
+  cancelChallenge,
+  subscribeToIncomingChallenges,
+  subscribeToOutgoingChallengeUpdates,
+} from "@/lib/battle";
+import { Player, BattleFormat, BattleChallenge } from "@/lib/types";
+
+export default function BattlePage() {
+  const router = useRouter();
+  const [profile, setProfile] = useState<Player | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [format, setFormat] = useState<BattleFormat>("text");
+
+  const [inQueue, setInQueue] = useState(false);
+  const [queueSince, setQueueSince] = useState<string | null>(null);
+  const [stopPolling, setStopPolling] = useState<(() => void) | null>(null);
+
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [search, setSearch] = useState("");
+
+  const [incoming, setIncoming] = useState<BattleChallenge[]>([]);
+  const [outgoing, setOutgoing] = useState<BattleChallenge[]>([]);
+  const [challengeMessage, setChallengeMessage] = useState("");
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) {
+      setLoading(false);
+      return;
+    }
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!data.session) {
+        setLoading(false);
+        return;
+      }
+      const p = await getMyPlayer();
+      setProfile(p);
+      setLoading(false);
+    });
+  }, []);
+
+  useEffect(() => {
+    getPlayers().then(setPlayers);
+  }, []);
+
+  const refreshChallenges = useCallback(async () => {
+    if (!profile) return;
+    const { incoming, outgoing } = await getMyChallenges(profile.id);
+    setIncoming(incoming);
+    setOutgoing(outgoing);
+  }, [profile]);
+
+  useEffect(() => {
+    if (!profile) return;
+    refreshChallenges();
+    isInQueue(profile.id, format).then(setInQueue);
+
+    const unsubIn = subscribeToIncomingChallenges(profile.id, () => refreshChallenges());
+    const unsubOut = subscribeToOutgoingChallengeUpdates(profile.id, (c) => {
+      refreshChallenges();
+      if (c.status === "accepted" && c.battleId) {
+        router.push(`/battle/${c.battleId}`);
+      }
+    });
+    return () => {
+      unsubIn();
+      unsubOut();
+    };
+  }, [profile, refreshChallenges, router]);
+
+  async function handleJoinQueue() {
+    if (!profile) return;
+    const since = new Date().toISOString();
+    const res = await joinQueue(profile.id, format);
+    if (!res.ok) return;
+    setInQueue(true);
+    setQueueSince(since);
+    const stop = pollForMatch(profile.id, format, since, (battle) => {
+      router.push(`/battle/${battle.id}`);
+    });
+    setStopPolling(() => stop);
+  }
+
+  async function handleLeaveQueue() {
+    if (!profile) return;
+    stopPolling?.();
+    setStopPolling(null);
+    await leaveQueue(profile.id, format);
+    setInQueue(false);
+  }
+
+  async function handleChallenge(opponentId: string) {
+    if (!profile) return;
+    setChallengeMessage("");
+    const res = await sendChallenge(profile.id, opponentId, format);
+    setChallengeMessage(res.ok ? "Challenge sent." : res.message ?? "Could not send challenge.");
+    refreshChallenges();
+  }
+
+  async function handleAccept(challengeId: string) {
+    const res = await acceptChallenge(challengeId);
+    if (res.ok && res.battleId) {
+      router.push(`/battle/${res.battleId}`);
+    }
+  }
+
+  const filteredPlayers = players.filter(
+    (p) =>
+      p.id !== profile?.id &&
+      (p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.rank.toLowerCase() === search.toLowerCase())
+  );
+
+  if (loading) return null;
+
+  if (!profile) {
+    return (
+      <div className="max-w-xl mx-auto px-6 py-20">
+        <p className="font-data text-[13px] uppercase tracking-wider text-seal mb-4">
+          Battle
+        </p>
+        <h1 className="font-display text-4xl mb-6">Register to battle.</h1>
+        <p className="text-ink-soft text-lg leading-relaxed mb-8">
+          You need a ranked profile before you can queue up or send a
+          challenge.
+        </p>
+        <Link
+          href="/join"
+          className="font-data text-[13px] uppercase tracking-wider bg-ink text-paper px-8 py-4 hover:bg-seal transition-colors"
+        >
+          Join the League
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-xl mx-auto px-6 py-20">
+      <p className="font-data text-[13px] uppercase tracking-wider text-seal mb-4">
+        Battle
+      </p>
+      <h1 className="font-display text-4xl mb-10">Find an opponent.</h1>
+
+      <div className="flex gap-px bg-rule border border-rule w-fit mb-10">
+        {(["text", "audio"] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => {
+              if (!inQueue) setFormat(f);
+            }}
+            disabled={inQueue}
+            className={`font-data text-[13px] uppercase tracking-wider px-6 py-3 transition-colors disabled:cursor-not-allowed ${
+              format === f
+                ? "bg-ink text-paper"
+                : "bg-paper text-ink-soft hover:text-ink"
+            }`}
+          >
+            {f === "text" ? "Text Battle" : "Audio Battle"}
+          </button>
+        ))}
+      </div>
+
+      <div className="border border-rule p-8 mb-12">
+        {inQueue ? (
+          <div>
+            <p className="font-display text-2xl mb-2">Finding an opponent&hellip;</p>
+            <p className="text-ink-soft text-[15px] mb-6">
+              You&rsquo;ll be moved into the battle room automatically the
+              moment someone else queues up for {format}.
+            </p>
+            <button
+              onClick={handleLeaveQueue}
+              className="font-data text-[13px] uppercase tracking-wider border border-ink px-6 py-3 hover:bg-ink hover:text-paper transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <div>
+            <p className="text-ink-soft text-[15px] mb-6">
+              Queue up for a random {format} battle, or challenge a specific
+              player below.
+            </p>
+            <button
+              onClick={handleJoinQueue}
+              className="font-data text-[13px] uppercase tracking-wider bg-ink text-paper px-8 py-4 hover:bg-seal transition-colors"
+            >
+              Join Queue
+            </button>
+          </div>
+        )}
+      </div>
+
+      {incoming.length > 0 && (
+        <div className="mb-12">
+          <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-4">
+            Incoming Challenges
+          </p>
+          <div className="space-y-px bg-rule border border-rule">
+            {incoming.map((c) => {
+              const from = players.find((p) => p.id === c.challengerId);
+              return (
+                <div
+                  key={c.id}
+                  className="bg-paper p-4 flex items-center justify-between"
+                >
+                  <div>
+                    <p className="font-body text-[15px]">
+                      {from?.name ?? "Unknown player"}
+                    </p>
+                    <p className="font-data text-[11px] text-ink-soft uppercase tracking-wider">
+                      {c.format} battle
+                    </p>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => handleAccept(c.id)}
+                      className="font-data text-[12px] uppercase tracking-wider text-seal hover:underline"
+                    >
+                      Accept
+                    </button>
+                    <button
+                      onClick={() => declineChallenge(c.id).then(refreshChallenges)}
+                      className="font-data text-[12px] uppercase tracking-wider text-ink-soft hover:underline"
+                    >
+                      Decline
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {outgoing.length > 0 && (
+        <div className="mb-12">
+          <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-4">
+            Sent Challenges
+          </p>
+          <div className="space-y-px bg-rule border border-rule">
+            {outgoing.map((c) => {
+              const to = players.find((p) => p.id === c.opponentId);
+              return (
+                <div
+                  key={c.id}
+                  className="bg-paper p-4 flex items-center justify-between"
+                >
+                  <div>
+                    <p className="font-body text-[15px]">
+                      {to?.name ?? "Unknown player"}
+                    </p>
+                    <p className="font-data text-[11px] text-ink-soft uppercase tracking-wider">
+                      {c.format} battle &middot; waiting
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => cancelChallenge(c.id).then(refreshChallenges)}
+                    className="font-data text-[12px] uppercase tracking-wider text-ink-soft hover:underline"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div>
+        <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-4">
+          Challenge a Player
+        </p>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by name or rank"
+          className="w-full bg-transparent border-b border-rule py-3 mb-2 focus:border-seal outline-none"
+        />
+        {challengeMessage && (
+          <p className="font-data text-[12px] text-seal mb-2">{challengeMessage}</p>
+        )}
+        {search && (
+          <div className="space-y-px bg-rule border border-rule max-h-64 overflow-y-auto">
+            {filteredPlayers.slice(0, 8).map((p) => (
+              <button
+                key={p.id}
+                onClick={() => handleChallenge(p.id)}
+                className="w-full bg-paper p-4 flex items-center justify-between hover:bg-rule/20 transition-colors text-left"
+              >
+                <span className="font-body text-[15px]">{p.name}</span>
+                <span className="font-data text-[12px] text-ink-soft">{p.rank}</span>
+              </button>
+            ))}
+            {filteredPlayers.length === 0 && (
+              <p className="bg-paper p-4 text-ink-soft text-[14px]">No players found.</p>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
