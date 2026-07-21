@@ -122,24 +122,33 @@ export default async function Home() {
           <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-4">
             From the Archive
           </p>
-          <Link href="/archive" className="group block">
-            <h3 className="font-display text-2xl mb-3 group-hover:text-seal transition-colors">
-              {featured.topic}
-            </h3>
-            <p className="text-ink-soft text-[15px] leading-relaxed mb-4">
-              {featured.aiSummary}
+          {featured ? (
+            <Link href="/archive" className="group block">
+              <h3 className="font-display text-2xl mb-3 group-hover:text-seal transition-colors">
+                {featured.topic}
+              </h3>
+              <p className="text-ink-soft text-[15px] leading-relaxed mb-4">
+                {featured.aiSummary}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {featured.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="font-data text-[11px] uppercase tracking-wider text-ink-soft border border-rule px-2 py-1"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </Link>
+          ) : (
+            <p className="text-ink-soft text-[15px]">
+              No matches recorded yet.{" "}
+              <Link href="/join" className="text-seal hover:underline">
+                Be the first to play one.
+              </Link>
             </p>
-            <div className="flex flex-wrap gap-2">
-              {featured.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="font-data text-[11px] uppercase tracking-wider text-ink-soft border border-rule px-2 py-1"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </Link>
+          )}
         </div>
         <div className="md:col-span-2 border-l border-rule pl-12">
           <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-4">

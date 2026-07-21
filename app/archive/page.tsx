@@ -32,6 +32,14 @@ export default async function ArchivePage() {
       </div>
 
       <div className="space-y-px bg-rule border border-rule">
+        {matches.length === 0 && (
+          <div className="bg-paper p-8 text-center">
+            <p className="text-ink-soft text-[15px]">
+              No matches recorded yet — check back once the first official
+              debates are played.
+            </p>
+          </div>
+        )}
         {matches.map((m) => {
           const a = getPlayer(m.playerAId);
           const b = getPlayer(m.playerBId);
