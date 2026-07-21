@@ -3,6 +3,9 @@
 -- rank length: 1 letter = One Alphabet League, 2 = Two Alphabet League,
 -- 3+ = Alphabet League. Also adds rank_since so the Me page can show a
 -- live "time at current rank" counter.
+--
+-- Note: `league` is a Postgres enum (one_alphabet.league_type), not plain
+-- text, so the CASE expression needs an explicit cast.
 
 alter table one_alphabet.players add column if not exists rank_since timestamptz not null default now();
 
@@ -20,11 +23,11 @@ begin
     end if;
   end if;
 
-  new.league := case
+  new.league := (case
     when length(new.rank) = 1 then 'One Alphabet League'
     when length(new.rank) = 2 then 'Two Alphabet League'
     else 'Alphabet League'
-  end;
+  end)::one_alphabet.league_type;
 
   return new;
 end;
@@ -36,9 +39,10 @@ create trigger trg_assign_rank
   for each row execute function one_alphabet.assign_next_rank();
 
 -- Backfill anyone already in the table (e.g. you, currently mis-filed).
-update one_alphabet.players set league = case
-  when length(rank) = 1 then 'One Alphabet League'
-  when length(rank) = 2 then 'Two Alphabet League'
-  else 'Alphabet League'
-end,
-rank_since = coalesce(rank_since, joined_at);
+update one_alphabet.players set
+  league = (case
+    when length(rank) = 1 then 'One Alphabet League'
+    when length(rank) = 2 then 'Two Alphabet League'
+    else 'Alphabet League'
+  end)::one_alphabet.league_type,
+  rank_since = coalesce(rank_since, joined_at);

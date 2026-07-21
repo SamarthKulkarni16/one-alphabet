@@ -162,11 +162,11 @@ begin
     end if;
   end if;
 
-  new.league := case
+  new.league := (case
     when length(new.rank) = 1 then 'One Alphabet League'
     when length(new.rank) = 2 then 'Two Alphabet League'
     else 'Alphabet League'
-  end;
+  end)::one_alphabet.league_type;
 
   return new;
 end;
