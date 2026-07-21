@@ -1,21 +1,56 @@
+"use client";
+
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { getMatchById, getPlayerLookup } from "@/lib/queries";
+import { Match, Player } from "@/lib/types";
 
-export const dynamic = "force-dynamic";
+export default function MatchPage() {
+  const { id } = useParams<{ id: string }>();
+  const [match, setMatch] = useState<Match | null | undefined>(undefined);
+  const [playerLookup, setPlayerLookup] = useState<Map<string, Player>>(new Map());
+  const [recordingLink, setRecordingLink] = useState<string | null>(null);
+  const [recordingState, setRecordingState] = useState<"idle" | "loading" | "error">("idle");
 
-export default async function MatchPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const [match, playerLookup] = await Promise.all([
-    getMatchById(id),
-    getPlayerLookup(),
-  ]);
+  useEffect(() => {
+    if (!id) return;
+    Promise.all([getMatchById(id), getPlayerLookup()]).then(([m, lookup]) => {
+      setMatch(m);
+      setPlayerLookup(lookup);
+    });
+  }, [id]);
 
-  if (!match) notFound();
+  async function loadRecording() {
+    if (!match) return;
+    setRecordingState("loading");
+    try {
+      const res = await fetch("/api/daily/recording-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ matchId: match.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setRecordingLink(data.downloadLink);
+      setRecordingState("idle");
+    } catch {
+      setRecordingState("error");
+    }
+  }
+
+  if (match === undefined) return null;
+  if (match === null) {
+    return (
+      <div className="max-w-xl mx-auto px-6 py-20">
+        <p className="font-display text-2xl mb-4">Match not found.</p>
+        <Link href="/archive" className="font-data text-[13px] uppercase tracking-wider text-seal hover:underline">
+          &larr; Back to Archive
+        </Link>
+      </div>
+    );
+  }
+
 
   const a = playerLookup.get(match.playerAId);
   const b = playerLookup.get(match.playerBId);
@@ -107,18 +142,32 @@ export default async function MatchPage({
         </div>
       )}
 
-      {!match.transcript && match.videoUrl && (
-        <a
-          href={match.videoUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-data text-[13px] uppercase tracking-wider text-seal hover:underline"
-        >
-          Listen to the recording &rarr;
-        </a>
+      {match.tags.includes("audio") && (
+        <div>
+          <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-4">
+            Recording
+          </p>
+          {recordingLink ? (
+            <audio controls src={recordingLink} className="w-full mb-2" />
+          ) : (
+            <button
+              onClick={loadRecording}
+              disabled={recordingState === "loading"}
+              className="font-data text-[13px] uppercase tracking-wider bg-ink text-paper px-6 py-3 hover:bg-seal transition-colors disabled:opacity-40"
+            >
+              {recordingState === "loading" ? "Loading\u2026" : "Load Recording"}
+            </button>
+          )}
+          {recordingState === "error" && (
+            <p className="text-ink-soft text-[14px] italic mt-2">
+              Recording isn&rsquo;t ready yet &mdash; Daily can take a minute
+              or two to finish processing after the call ends. Try again shortly.
+            </p>
+          )}
+        </div>
       )}
 
-      {!match.transcript && !match.videoUrl && (
+      {!match.transcript && !match.tags.includes("audio") && (
         <p className="text-ink-soft text-[15px] italic">
           No transcript recorded for this match yet.
         </p>

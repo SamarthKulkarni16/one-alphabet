@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { getMyPlayer, getPlayerById } from "@/lib/queries";
-import { getBattle, markBattleLive, endBattle, subscribeToBattle, setBattleTopic } from "@/lib/battle";
+import { getBattle, markBattleLive, subscribeToBattle, setBattleTopic } from "@/lib/battle";
 import { Player, Battle } from "@/lib/types";
 import TextBattle from "@/components/TextBattle";
+import AudioBattle from "@/components/AudioBattle";
 
 export default function BattleRoomPage() {
   const { id } = useParams<{ id: string }>();
@@ -72,7 +73,7 @@ export default function BattleRoomPage() {
         {battle.status}
       </p>
 
-      <div className={battle.status === "live" && battle.format === "text" ? "" : "border border-rule p-8 mb-8"}>
+      <div className={battle.status === "live" ? "" : "border border-rule p-8 mb-8"}>
         {battle.status === "waiting" && (
           <div>
             <p className="text-ink-soft text-[15px] mb-4">
@@ -110,18 +111,7 @@ export default function BattleRoomPage() {
           <TextBattle battle={battle} profile={profile} opponent={opponent} />
         )}
         {battle.status === "live" && battle.format === "audio" && (
-          <div className="border border-rule p-8">
-            <p className="font-display text-2xl mb-2">This battle is live.</p>
-            <p className="text-ink-soft text-[15px] mb-6">
-              The audio call itself is next up, once Daily.co is wired in.
-            </p>
-            <button
-              onClick={() => endBattle(battle.id)}
-              className="font-data text-[13px] uppercase tracking-wider border border-ink px-6 py-3 hover:bg-ink hover:text-paper transition-colors"
-            >
-              End Battle
-            </button>
-          </div>
+          <AudioBattle battle={battle} profile={profile} opponent={opponent} />
         )}
         {battle.status === "completed" && (
           <div>
