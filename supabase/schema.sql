@@ -126,7 +126,7 @@ declare
 begin
   while num > 0 loop
     num := num - 1;
-    result := chr(65 + (num % 26)) || result;
+    result := chr((65 + (num % 26))::int) || result;
     num := num / 26;
   end loop;
   return result;
