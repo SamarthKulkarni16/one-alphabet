@@ -220,3 +220,46 @@ $$;
 
 revoke all on function one_alphabet.register_player(text, text, text, int, text) from public, anon;
 grant execute on function one_alphabet.register_player(text, text, text, int, text) to authenticated;
+
+-- ── Rank history (see 011_rank_history.sql for the standalone version —
+-- folded in here so a fresh setup gets it in one pass) ──
+
+create table one_alphabet.rank_history (
+  id uuid primary key default gen_random_uuid(),
+  player_id uuid not null references one_alphabet.players(id) on delete cascade,
+  rank text not null,
+  league one_alphabet.league_type not null,
+  started_at timestamptz not null,
+  ended_at timestamptz
+);
+
+create index rank_history_player_idx on one_alphabet.rank_history (player_id);
+create index rank_history_rank_idx on one_alphabet.rank_history (rank);
+
+alter table one_alphabet.rank_history enable row level security;
+create policy "public read rank history" on one_alphabet.rank_history for select using (true);
+grant select on one_alphabet.rank_history to anon, authenticated;
+
+create or replace function one_alphabet.record_rank_history() returns trigger
+language plpgsql as $$
+begin
+  if tg_op = 'INSERT' then
+    insert into one_alphabet.rank_history (player_id, rank, league, started_at)
+    values (new.id, new.rank, new.league, new.rank_since);
+  elsif tg_op = 'UPDATE' then
+    if new.rank is distinct from old.rank then
+      update one_alphabet.rank_history
+      set ended_at = new.rank_since
+      where player_id = new.id and ended_at is null;
+
+      insert into one_alphabet.rank_history (player_id, rank, league, started_at)
+      values (new.id, new.rank, new.league, new.rank_since);
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+create trigger trg_record_rank_history
+  after insert or update of rank on one_alphabet.players
+  for each row execute function one_alphabet.record_rank_history();

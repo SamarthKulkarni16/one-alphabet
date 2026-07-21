@@ -6,4 +6,5 @@
 
 delete from one_alphabet.matches;
 delete from one_alphabet.signups;
+delete from one_alphabet.rank_history;
 delete from one_alphabet.players;

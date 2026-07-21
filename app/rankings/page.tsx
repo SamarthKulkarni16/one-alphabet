@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getPlayers } from "@/lib/queries";
 export const dynamic = "force-dynamic";
 
@@ -25,9 +26,14 @@ export default async function RankingsPage() {
         Public Ranking
       </p>
       <h1 className="font-display text-5xl mb-6">The Ladder</h1>
-      <p className="text-ink-soft text-lg leading-relaxed mb-16 max-w-xl">
+      <p className="text-ink-soft text-lg leading-relaxed mb-6 max-w-xl">
         A &rarr; B &rarr; C &hellip; Z &rarr; AA &rarr; AB &hellip; Rank climbs
         as letters shorten. One Alphabet Players sit at the top of the sport.
+      </p>
+      <p className="font-data text-[13px] mb-16">
+        <Link href="/history" className="text-seal hover:underline">
+          Search who&rsquo;s held a specific rank &rarr;
+        </Link>
       </p>
 
       {leagueOrder.map((league) => {
@@ -47,9 +53,10 @@ export default async function RankingsPage() {
             </h2>
             <div className="border-t border-rule">
               {rows.map((p) => (
-                <div
+                <Link
+                  href={`/players/${p.id}`}
                   key={p.id}
-                  className="grid grid-cols-[3.5rem_1fr_auto_auto] sm:grid-cols-[4rem_1fr_8rem_8rem_8rem] items-center gap-4 border-b border-rule py-4"
+                  className="grid grid-cols-[3.5rem_1fr_auto_auto] sm:grid-cols-[4rem_1fr_8rem_8rem_8rem] items-center gap-4 border-b border-rule py-4 hover:bg-paper-dim transition-colors -mx-2 px-2"
                 >
                   <span
                     className={`font-display text-2xl ${
@@ -58,12 +65,7 @@ export default async function RankingsPage() {
                   >
                     {p.rank}
                   </span>
-                  <div>
-                    <p className="font-body font-medium">{p.name}</p>
-                    <p className="font-data text-[12px] text-ink-soft">
-                      {p.country}
-                    </p>
-                  </div>
+                  <p className="font-body font-medium">{p.name}</p>
                   <span className="hidden sm:block font-data text-[12px] text-ink-soft">
                     {p.wins}W&ndash;{p.losses}L
                   </span>
@@ -77,7 +79,7 @@ export default async function RankingsPage() {
                       `${10 - p.judgedMatches} to flagship`
                     )}
                   </span>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

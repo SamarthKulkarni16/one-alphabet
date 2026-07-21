@@ -17,6 +17,16 @@ export interface Player {
   bio?: string;
 }
 
+export interface RankHistoryEntry {
+  id: string;
+  playerId: string;
+  playerName?: string;
+  rank: string;
+  league: League;
+  startedAt: string;
+  endedAt: string | null;
+}
+
 export interface Match {
   id: string;
   topic: string;

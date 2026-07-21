@@ -10,8 +10,9 @@ import {
   getMyPlayer,
   getMatchesForPlayer,
   getPlayerLookup,
+  getRankHistoryForPlayer,
 } from "@/lib/queries";
-import { Player, Match } from "@/lib/types";
+import { Player, Match, RankHistoryEntry } from "@/lib/types";
 import TimeAtRank from "@/components/TimeAtRank";
 
 export default function JoinPage() {
@@ -20,6 +21,7 @@ export default function JoinPage() {
   const [profile, setProfile] = useState<Player | null>(null);
   const [checkingProfile, setCheckingProfile] = useState(false);
   const [history, setHistory] = useState<Match[]>([]);
+  const [rankHistory, setRankHistory] = useState<RankHistoryEntry[]>([]);
   const [playerLookup, setPlayerLookup] = useState<Map<string, Player>>(
     new Map()
   );
@@ -65,10 +67,12 @@ export default function JoinPage() {
   useEffect(() => {
     if (!profile) {
       setHistory([]);
+      setRankHistory([]);
       return;
     }
     getMatchesForPlayer(profile.id).then(setHistory);
     getPlayerLookup().then(setPlayerLookup);
+    getRankHistoryForPlayer(profile.id).then(setRankHistory);
   }, [profile]);
 
   async function handleSendLink(e: React.FormEvent) {
@@ -152,6 +156,36 @@ export default function JoinPage() {
                 </p>
                 <p>flagship-eligible</p>
               </div>
+            </div>
+          </div>
+
+          <div className="mb-10">
+            <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-4">
+              Rank History
+            </p>
+            <div className="space-y-px bg-rule border border-rule">
+              {rankHistory.map((h) => (
+                <div
+                  key={h.id}
+                  className="bg-paper p-4 flex items-center justify-between"
+                >
+                  <div className="flex items-baseline gap-3">
+                    <span className="font-display text-xl">{h.rank}</span>
+                    <span className="font-data text-[11px] text-ink-soft uppercase tracking-wider">
+                      {h.league}
+                    </span>
+                  </div>
+                  <span className="font-data text-[12px] text-ink-soft">
+                    {h.endedAt ? (
+                      <TimeAtRank since={h.startedAt} until={h.endedAt} />
+                    ) : (
+                      <>
+                        <TimeAtRank since={h.startedAt} /> &middot; current
+                      </>
+                    )}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 

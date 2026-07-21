@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from "./supabase";
-import { Player, Match, Tournament } from "./types";
+import { Player, Match, Tournament, RankHistoryEntry } from "./types";
 import {
   players as mockPlayers,
   matches as mockMatches,
@@ -112,6 +112,74 @@ export async function getMatchesForPlayer(playerId: string): Promise<Match[]> {
       aiSummary: m.ai_summary ?? "",
       videoUrl: m.video_url ?? undefined,
       transcriptUrl: m.transcript_url ?? undefined,
+    })
+  );
+}
+
+export async function getPlayerById(id: string): Promise<Player | null> {
+  if (!isSupabaseConfigured || !supabase) {
+    return mockPlayers.find((p) => p.id === id) ?? null;
+  }
+  const { data, error } = await supabase
+    .from("players")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error || !data) return null;
+  return {
+    id: data.id,
+    name: data.name,
+    rank: data.rank,
+    league: data.league,
+    judgedMatches: data.judged_matches,
+    wins: data.wins,
+    losses: data.losses,
+    joinedAt: data.joined_at,
+    rankSince: data.rank_since,
+    country: data.country,
+    bio: data.bio ?? undefined,
+  };
+}
+
+export async function getRankHistoryForPlayer(
+  playerId: string
+): Promise<RankHistoryEntry[]> {
+  if (!isSupabaseConfigured || !supabase) return [];
+  const { data, error } = await supabase
+    .from("rank_history")
+    .select("*")
+    .eq("player_id", playerId)
+    .order("started_at", { ascending: false });
+  if (error || !data) return [];
+  return data.map(
+    (r): RankHistoryEntry => ({
+      id: r.id,
+      playerId: r.player_id,
+      rank: r.rank,
+      league: r.league,
+      startedAt: r.started_at,
+      endedAt: r.ended_at,
+    })
+  );
+}
+
+export async function searchByRank(rank: string): Promise<RankHistoryEntry[]> {
+  if (!isSupabaseConfigured || !supabase) return [];
+  const { data, error } = await supabase
+    .from("rank_history")
+    .select("*, players(name)")
+    .eq("rank", rank.toUpperCase())
+    .order("started_at", { ascending: false });
+  if (error || !data) return [];
+  return data.map(
+    (r): RankHistoryEntry => ({
+      id: r.id,
+      playerId: r.player_id,
+      playerName: r.players?.name ?? "Unknown",
+      rank: r.rank,
+      league: r.league,
+      startedAt: r.started_at,
+      endedAt: r.ended_at,
     })
   );
 }
