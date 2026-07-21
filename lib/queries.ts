@@ -132,6 +132,8 @@ export async function registerPlayer(input: {
   name: string;
   country: string;
   role: "player" | "judge";
+  age?: number | null;
+  gender?: string;
 }): Promise<{ ok: boolean; message: string; rank?: string }> {
   if (!isSupabaseConfigured || !supabase) {
     return { ok: false, message: "Not connected to a live database yet." };
@@ -140,6 +142,8 @@ export async function registerPlayer(input: {
     p_name: input.name,
     p_country: input.country,
     p_role: input.role,
+    p_age: input.age ?? null,
+    p_gender: input.gender ?? null,
   });
   if (error || !data) {
     return {

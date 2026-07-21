@@ -1,4 +1,8 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 const links = [
   { href: "/constitution", label: "Constitution" },
@@ -8,6 +12,19 @@ const links = [
 ];
 
 export default function Nav() {
+  const [signedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return;
+    supabase.auth.getSession().then(({ data }) => {
+      setSignedIn(Boolean(data.session));
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_e, s) => {
+      setSignedIn(Boolean(s));
+    });
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
   return (
     <header className="border-b border-rule">
       <div className="max-w-6xl mx-auto px-6">
@@ -33,7 +50,7 @@ export default function Nav() {
             href="/join"
             className="font-data text-[13px] uppercase tracking-wider border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors"
           >
-            Join
+            {signedIn ? "Me" : "Join"}
           </Link>
         </div>
       </div>

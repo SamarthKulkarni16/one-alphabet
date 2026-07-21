@@ -69,6 +69,8 @@ export default function JoinPage() {
       name: String(form.get("name") ?? ""),
       country: String(form.get("country") ?? ""),
       role,
+      age: form.get("age") ? Number(form.get("age")) : null,
+      gender: String(form.get("gender") ?? ""),
     });
     if (res.ok) {
       const p = await getMyPlayer();
@@ -202,6 +204,41 @@ export default function JoinPage() {
               className="w-full bg-transparent border-b border-rule py-3 mt-2 focus:border-seal outline-none"
             />
           </label>
+
+          <div className="grid grid-cols-2 gap-6">
+            <label className="block">
+              <span className="font-data text-[12px] uppercase tracking-wider text-ink-soft">
+                Age
+              </span>
+              <input
+                name="age"
+                type="number"
+                min={5}
+                max={120}
+                className="w-full bg-transparent border-b border-rule py-3 mt-2 focus:border-seal outline-none"
+              />
+            </label>
+            <label className="block">
+              <span className="font-data text-[12px] uppercase tracking-wider text-ink-soft">
+                Gender
+              </span>
+              <select
+                name="gender"
+                defaultValue=""
+                className="w-full bg-transparent border-b border-rule py-3 mt-2 focus:border-seal outline-none"
+              >
+                <option value="">Prefer not to say</option>
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+                <option value="nonbinary">Non-binary</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+          </div>
+          <p className="font-data text-[11px] text-ink-soft -mt-4">
+            Age and gender are kept private &mdash; never shown on the
+            public Rankings or Archive.
+          </p>
 
           {role === "judge" && (
             <p className="font-data text-[12px] text-ink-soft border border-rule p-4">

@@ -63,6 +63,8 @@ create table one_alphabet.signups (
   email text not null,
   role text not null check (role in ('player', 'judge')),
   country text,
+  age int,
+  gender text,
   status text not null default 'pending' check (status in ('pending', 'accepted', 'declined')),
   created_at timestamptz not null default now()
 );
@@ -170,7 +172,9 @@ create trigger trg_assign_rank
 create or replace function one_alphabet.register_player(
   p_name text,
   p_country text,
-  p_role text default 'player'
+  p_role text default 'player',
+  p_age int default null,
+  p_gender text default null
 )
 returns one_alphabet.players
 language plpgsql
@@ -195,12 +199,12 @@ begin
   values (p_name, p_country, uid)
   returning * into new_row;
 
-  insert into one_alphabet.signups (name, email, role, country, status, created_at)
-  values (p_name, coalesce(verified_email, 'unknown'), p_role, p_country, 'accepted', now());
+  insert into one_alphabet.signups (name, email, role, country, status, created_at, age, gender)
+  values (p_name, coalesce(verified_email, 'unknown'), p_role, p_country, 'accepted', now(), p_age, p_gender);
 
   return new_row;
 end;
 $$;
 
-revoke all on function one_alphabet.register_player(text, text, text) from public, anon;
-grant execute on function one_alphabet.register_player(text, text, text) to authenticated;
+revoke all on function one_alphabet.register_player(text, text, text, int, text) from public, anon;
+grant execute on function one_alphabet.register_player(text, text, text, int, text) to authenticated;
