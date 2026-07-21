@@ -1,6 +1,7 @@
 import { getMatches, getPlayerLookup } from "@/lib/queries";
 
 export const metadata = { title: "Archive | One Alphabet" };
+export const dynamic = "force-dynamic";
 
 export default async function ArchivePage() {
   const [matches, playerLookup] = await Promise.all([

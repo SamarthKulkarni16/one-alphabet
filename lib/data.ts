@@ -10,6 +10,7 @@ export const players: Player[] = [
     wins: 41,
     losses: 6,
     joinedAt: "2025-02-11",
+    rankSince: "2025-02-11",
     country: "Nigeria",
     bio: "Reigning Ace. Known for reframing economic debates around lived experience rather than statistics.",
   },
@@ -22,6 +23,7 @@ export const players: Player[] = [
     wins: 37,
     losses: 9,
     joinedAt: "2025-01-30",
+    rankSince: "2025-01-30",
     country: "Japan",
   },
   {
@@ -33,6 +35,7 @@ export const players: Player[] = [
     wins: 29,
     losses: 11,
     joinedAt: "2025-03-02",
+    rankSince: "2025-03-02",
     country: "India",
   },
   {
@@ -44,6 +47,7 @@ export const players: Player[] = [
     wins: 25,
     losses: 10,
     joinedAt: "2025-03-14",
+    rankSince: "2025-03-14",
     country: "Brazil",
   },
   {
@@ -55,6 +59,7 @@ export const players: Player[] = [
     wins: 20,
     losses: 8,
     joinedAt: "2025-04-01",
+    rankSince: "2025-04-01",
     country: "Jordan",
   },
   {
@@ -66,6 +71,7 @@ export const players: Player[] = [
     wins: 18,
     losses: 9,
     joinedAt: "2025-04-05",
+    rankSince: "2025-04-05",
     country: "United Kingdom",
   },
   {
@@ -77,6 +83,7 @@ export const players: Player[] = [
     wins: 15,
     losses: 10,
     joinedAt: "2025-04-20",
+    rankSince: "2025-04-20",
     country: "Poland",
   },
   {
@@ -88,6 +95,7 @@ export const players: Player[] = [
     wins: 6,
     losses: 4,
     joinedAt: "2025-06-01",
+    rankSince: "2025-06-01",
     country: "Mexico",
   },
 ];

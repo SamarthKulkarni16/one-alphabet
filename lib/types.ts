@@ -12,6 +12,7 @@ export interface Player {
   wins: number;
   losses: number;
   joinedAt: string;
+  rankSince: string;
   country: string;
   bio?: string;
 }

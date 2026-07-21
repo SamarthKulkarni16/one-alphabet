@@ -1,6 +1,7 @@
 import { getTournaments } from "@/lib/queries";
 
 export const metadata = { title: "Tournaments | One Alphabet" };
+export const dynamic = "force-dynamic";
 
 const statusColor: Record<string, string> = {
   active: "text-seal border-seal",

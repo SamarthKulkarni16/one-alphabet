@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import AlphabetLadder from "@/components/AlphabetLadder";
 import { getMatches, getTournaments, getPlayers } from "@/lib/queries";

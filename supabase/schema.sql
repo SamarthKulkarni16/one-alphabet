@@ -21,7 +21,8 @@ create table one_alphabet.players (
   country text,
   bio text,
   user_id uuid references auth.users(id),
-  joined_at timestamptz not null default now()
+  joined_at timestamptz not null default now(),
+  rank_since timestamptz not null default now()
 );
 
 create unique index players_user_id_unique
@@ -150,18 +151,29 @@ alter table one_alphabet.players alter column rank drop not null;
 create or replace function one_alphabet.assign_next_rank() returns trigger
 language plpgsql as $$
 begin
-  if new.rank is null then
-    new.rank := one_alphabet.next_rank();
+  if tg_op = 'INSERT' then
+    if new.rank is null then
+      new.rank := one_alphabet.next_rank();
+    end if;
+    new.rank_since := now();
+  elsif tg_op = 'UPDATE' then
+    if new.rank is distinct from old.rank then
+      new.rank_since := now();
+    end if;
   end if;
-  if new.league is null then
-    new.league := 'Alphabet League';
-  end if;
+
+  new.league := case
+    when length(new.rank) = 1 then 'One Alphabet League'
+    when length(new.rank) = 2 then 'Two Alphabet League'
+    else 'Alphabet League'
+  end;
+
   return new;
 end;
 $$;
 
 create trigger trg_assign_rank
-  before insert on one_alphabet.players
+  before insert or update of rank on one_alphabet.players
   for each row execute function one_alphabet.assign_next_rank();
 
 -- Registration requires a verified Supabase Auth session (magic link).

@@ -27,6 +27,7 @@ export async function getPlayers(): Promise<Player[]> {
       wins: p.wins,
       losses: p.losses,
       joinedAt: p.joined_at,
+      rankSince: p.rank_since,
       country: p.country,
       bio: p.bio ?? undefined,
     })
@@ -77,6 +78,44 @@ export async function getTournaments(): Promise<Tournament[]> {
   );
 }
 
+export async function getMatchesForPlayer(playerId: string): Promise<Match[]> {
+  if (!isSupabaseConfigured || !supabase) {
+    return mockMatches.filter(
+      (m) =>
+        m.playerAId === playerId ||
+        m.playerBId === playerId ||
+        m.judgeId === playerId ||
+        m.refereeId === playerId
+    );
+  }
+  const { data, error } = await supabase
+    .from("matches")
+    .select("*")
+    .or(
+      `player_a_id.eq.${playerId},player_b_id.eq.${playerId},judge_id.eq.${playerId},referee_id.eq.${playerId}`
+    )
+    .order("match_date", { ascending: false });
+  if (error || !data) return [];
+  return data.map(
+    (m): Match => ({
+      id: m.id,
+      topic: m.topic,
+      playerAId: m.player_a_id,
+      playerBId: m.player_b_id,
+      judgeId: m.judge_id,
+      refereeId: m.referee_id,
+      tournament: m.tournament_id,
+      league: m.league,
+      winnerId: m.winner_id,
+      date: m.match_date,
+      tags: m.tags ?? [],
+      aiSummary: m.ai_summary ?? "",
+      videoUrl: m.video_url ?? undefined,
+      transcriptUrl: m.transcript_url ?? undefined,
+    })
+  );
+}
+
 export async function getPlayerLookup(): Promise<Map<string, Player>> {
   const all = await getPlayers();
   return new Map(all.map((p) => [p.id, p]));
@@ -123,6 +162,7 @@ export async function getMyPlayer(): Promise<Player | null> {
     wins: data.wins,
     losses: data.losses,
     joinedAt: data.joined_at,
+    rankSince: data.rank_since,
     country: data.country,
     bio: data.bio ?? undefined,
   };

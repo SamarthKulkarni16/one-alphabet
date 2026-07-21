@@ -4,14 +4,25 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Session } from "@supabase/supabase-js";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
-import { sendMagicLink, registerPlayer, getMyPlayer } from "@/lib/queries";
-import { Player } from "@/lib/types";
+import {
+  sendMagicLink,
+  registerPlayer,
+  getMyPlayer,
+  getMatchesForPlayer,
+  getPlayerLookup,
+} from "@/lib/queries";
+import { Player, Match } from "@/lib/types";
+import TimeAtRank from "@/components/TimeAtRank";
 
 export default function JoinPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [checkingSession, setCheckingSession] = useState(true);
   const [profile, setProfile] = useState<Player | null>(null);
   const [checkingProfile, setCheckingProfile] = useState(false);
+  const [history, setHistory] = useState<Match[]>([]);
+  const [playerLookup, setPlayerLookup] = useState<Map<string, Player>>(
+    new Map()
+  );
 
   // Step 1: email → magic link
   const [email, setEmail] = useState("");
@@ -50,6 +61,15 @@ export default function JoinPage() {
       setCheckingProfile(false);
     });
   }, [session]);
+
+  useEffect(() => {
+    if (!profile) {
+      setHistory([]);
+      return;
+    }
+    getMatchesForPlayer(profile.id).then(setHistory);
+    getPlayerLookup().then(setPlayerLookup);
+  }, [profile]);
 
   async function handleSendLink(e: React.FormEvent) {
     e.preventDefault();
@@ -104,7 +124,7 @@ export default function JoinPage() {
       {loading ? null : profile ? (
         <div>
           <div className="border border-rule p-8 mb-8">
-            <div className="flex items-baseline gap-4 mb-6">
+            <div className="flex items-baseline gap-4 mb-2">
               <span className="font-display text-5xl text-seal">
                 {profile.rank}
               </span>
@@ -112,6 +132,9 @@ export default function JoinPage() {
                 {profile.league}
               </span>
             </div>
+            <p className="font-data text-[12px] text-ink-soft mb-6">
+              At this rank for <TimeAtRank since={profile.rankSince} />
+            </p>
             <div className="grid grid-cols-3 gap-4 font-data text-[13px] text-ink-soft border-t border-rule pt-6">
               <div>
                 <p className="text-ink text-lg">
@@ -131,18 +154,70 @@ export default function JoinPage() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-6">
-            <Link
-              href="/rankings"
-              className="font-data text-[13px] uppercase tracking-wider text-seal hover:underline"
-            >
-              View on the Ladder &rarr;
-            </Link>
+
+          <div className="mb-10">
+            <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-4">
+              Match History
+            </p>
+            {history.length === 0 ? (
+              <p className="text-ink-soft text-[15px]">
+                No matches yet &mdash; nothing recorded for you in the
+                archive so far.
+              </p>
+            ) : (
+              <div className="space-y-px bg-rule border border-rule">
+                {history.map((m) => {
+                  const isJudge = m.judgeId === profile.id;
+                  const isReferee = m.refereeId === profile.id;
+                  const opponentId =
+                    m.playerAId === profile.id ? m.playerBId : m.playerAId;
+                  const opponent = playerLookup.get(opponentId);
+                  const wasWinner = m.winnerId === profile.id;
+                  return (
+                    <div key={m.id} className="bg-paper p-5">
+                      <p className="font-data text-[11px] uppercase tracking-wider text-ink-soft mb-1">
+                        {new Date(m.date).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}{" "}
+                        &middot;{" "}
+                        {isJudge
+                          ? "Judged"
+                          : isReferee
+                          ? "Refereed"
+                          : wasWinner
+                          ? "Won"
+                          : m.winnerId
+                          ? "Lost"
+                          : "Undecided"}
+                      </p>
+                      <p className="font-body text-[15px]">{m.topic}</p>
+                      {!isJudge && !isReferee && opponent && (
+                        <p className="font-data text-[12px] text-ink-soft mt-1">
+                          vs {opponent.name}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <Link
+            href="/rankings"
+            className="font-data text-[13px] uppercase tracking-wider text-seal hover:underline"
+          >
+            View on the Ladder &rarr;
+          </Link>
+
+          <div className="mt-16 pt-6 border-t border-rule">
             <button
               onClick={handleSignOut}
-              className="font-data text-[13px] uppercase tracking-wider text-ink-soft hover:text-ink"
+              className="font-data text-[11px] text-ink-soft/50 hover:text-ink-soft transition-colors"
             >
-              Sign out
+              sign out
             </button>
           </div>
         </div>

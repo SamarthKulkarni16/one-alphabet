@@ -1,4 +1,6 @@
 import { getPlayers } from "@/lib/queries";
+export const dynamic = "force-dynamic";
+
 import { League } from "@/lib/types";
 
 export const metadata = { title: "Rankings | One Alphabet" };
