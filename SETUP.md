@@ -33,14 +33,27 @@ No code changes needed either way — `lib/supabase.ts` checks for those two
 variables and automatically switches from the seed data in `lib/data.ts` to
 live queries against the `one_alphabet` schema the moment they're set.
 
+## 3. Turn on magic-link sign-in
+
+1. Run `supabase/003_auth.sql` in the SQL Editor (adds `user_id` to
+   `players` and switches `register_player` to require a verified session).
+2. Authentication → Providers → **Email** should already be on by default
+   for a new project — that's all magic link needs, no separate toggle.
+3. Authentication → URL Configuration:
+   - **Site URL** → your production URL once deployed (e.g.
+     `https://one-alphabet.vercel.app`)
+   - **Redirect URLs** → add `https://one-alphabet.vercel.app/join` (or
+     whatever your actual domain ends up being)
+   Without this step, clicking the magic link will bounce to the wrong
+   place or get rejected.
+4. If you're testing locally before deploying, also add
+   `http://localhost:3000/join` to Redirect URLs.
+
 ## What still won't work yet (deliberately out of scope for this pass)
 
-- Player login / accounts — signups land in `one_alphabet.signups` for you
-  to review and manually promote into `players`, rather than a full
-  self-serve auth flow. Worth deciding if you want that before opening
-  registration publicly.
 - Admin UI for entering match results — for now that's a row insert in the
   Supabase table editor, or I can build a simple form for it next.
 - Video/transcript hosting — `video_url` / `transcript_url` are plain text
   columns; wiring these to Cloudflare R2 (already set up for Instagram) is
   a small follow-up once real matches start getting recorded.
+- Custom domain — you'll be on a `.vercel.app` URL until you point one at it.

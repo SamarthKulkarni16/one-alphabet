@@ -20,8 +20,12 @@ create table one_alphabet.players (
   losses int not null default 0,
   country text,
   bio text,
+  user_id uuid references auth.users(id),
   joined_at timestamptz not null default now()
 );
+
+create unique index players_user_id_unique
+  on one_alphabet.players (user_id) where user_id is not null;
 
 -- ── Tournaments ──
 create table one_alphabet.tournaments (
@@ -72,7 +76,6 @@ alter table one_alphabet.signups enable row level security;
 create policy "public read players" on one_alphabet.players for select using (true);
 create policy "public read tournaments" on one_alphabet.tournaments for select using (true);
 create policy "public read matches" on one_alphabet.matches for select using (true);
-create policy "public can submit signups" on one_alphabet.signups for insert with check (true);
 
 -- ── Expose this schema to the API ──
 -- The anon/authenticated roles need USAGE on the schema itself, plus the
@@ -81,7 +84,6 @@ create policy "public can submit signups" on one_alphabet.signups for insert wit
 -- only, can't be done from SQL).
 grant usage on schema one_alphabet to anon, authenticated;
 grant select on one_alphabet.players, one_alphabet.tournaments, one_alphabet.matches to anon, authenticated;
-grant insert on one_alphabet.signups to anon, authenticated;
 
 -- ── Seed data (same as the mock data currently on the site) ──
 insert into one_alphabet.tournaments (name, type, league, status, dates, description) values
@@ -160,7 +162,16 @@ create trigger trg_assign_rank
   before insert on one_alphabet.players
   for each row execute function one_alphabet.assign_next_rank();
 
-create or replace function one_alphabet.register_player(p_name text, p_country text)
+-- Registration requires a verified Supabase Auth session (magic link).
+-- The client can only ever pass name, country, role — rank, league,
+-- wins/losses, and the verified email are always server-controlled.
+-- Idempotent: calling it twice for the same signed-in user just returns
+-- their existing row instead of creating a second one.
+create or replace function one_alphabet.register_player(
+  p_name text,
+  p_country text,
+  p_role text default 'player'
+)
 returns one_alphabet.players
 language plpgsql
 security definer
@@ -168,13 +179,28 @@ set search_path = one_alphabet
 as $$
 declare
   new_row one_alphabet.players;
+  uid uuid := auth.uid();
+  verified_email text := (auth.jwt() ->> 'email');
 begin
-  insert into one_alphabet.players (name, country)
-  values (p_name, p_country)
+  if uid is null then
+    raise exception 'Must be signed in to register';
+  end if;
+
+  select * into new_row from one_alphabet.players where user_id = uid;
+  if found then
+    return new_row;
+  end if;
+
+  insert into one_alphabet.players (name, country, user_id)
+  values (p_name, p_country, uid)
   returning * into new_row;
+
+  insert into one_alphabet.signups (name, email, role, country, status, created_at)
+  values (p_name, coalesce(verified_email, 'unknown'), p_role, p_country, 'accepted', now());
+
   return new_row;
 end;
 $$;
 
-revoke all on function one_alphabet.register_player(text, text) from public;
-grant execute on function one_alphabet.register_player(text, text) to anon, authenticated;
+revoke all on function one_alphabet.register_player(text, text, text) from public, anon;
+grant execute on function one_alphabet.register_player(text, text, text) to authenticated;

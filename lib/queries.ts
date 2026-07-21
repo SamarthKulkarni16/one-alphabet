@@ -82,46 +82,45 @@ export async function getPlayerLookup(): Promise<Map<string, Player>> {
   return new Map(all.map((p) => [p.id, p]));
 }
 
-export async function submitSignup(input: {
-  name: string;
-  email: string;
-  role: "player" | "judge";
-  country: string;
-}): Promise<{ ok: boolean; message: string }> {
+export async function sendMagicLink(
+  email: string
+): Promise<{ ok: boolean; message: string }> {
   if (!isSupabaseConfigured || !supabase) {
     return {
       ok: false,
       message:
-        "Sign-ups aren't connected to a live database yet — this form will start saving real registrations once Supabase is wired up.",
+        "Sign-ups aren't connected to a live database yet — this will start sending real links once Supabase is wired up.",
     };
   }
-
-  // Log the raw sign-up (keeps email private — this table isn't public-readable).
-  const { error: signupError } = await supabase.from("signups").insert({
-    name: input.name,
-    email: input.email,
-    role: input.role,
-    country: input.country,
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo:
+        typeof window !== "undefined" ? window.location.origin + "/join" : undefined,
+    },
   });
-  if (signupError) {
-    return { ok: false, message: "Something went wrong. Try again in a moment." };
-  }
+  if (error) return { ok: false, message: error.message };
+  return { ok: true, message: "Check your email for a sign-in link." };
+}
 
-  // Everyone — player or judge — starts as a ranked player at the bottom
-  // of the ladder. Rank is assigned server-side; the client never controls it.
-  const { data: player, error: playerError } = await supabase.rpc(
-    "register_player",
-    { p_name: input.name, p_country: input.country }
-  );
-  if (playerError || !player) {
+export async function registerPlayer(input: {
+  name: string;
+  country: string;
+  role: "player" | "judge";
+}): Promise<{ ok: boolean; message: string; rank?: string }> {
+  if (!isSupabaseConfigured || !supabase) {
+    return { ok: false, message: "Not connected to a live database yet." };
+  }
+  const { data, error } = await supabase.rpc("register_player", {
+    p_name: input.name,
+    p_country: input.country,
+    p_role: input.role,
+  });
+  if (error || !data) {
     return {
-      ok: true,
-      message: "Registered — your rank will be assigned shortly.",
+      ok: false,
+      message: error?.message ?? "Something went wrong. Try again in a moment.",
     };
   }
-
-  return {
-    ok: true,
-    message: `Registered. You're ranked ${player.rank}.`,
-  };
+  return { ok: true, message: `Registered. You're ranked ${data.rank}.`, rank: data.rank };
 }
