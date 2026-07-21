@@ -1,6 +1,10 @@
 -- Optional. Seeds the same demo matches that used to show as mock data,
 -- so Archive/Home aren't blank while real matches haven't been played yet.
 -- Safe to skip entirely, or delete these rows later once real matches exist.
+--
+-- NOTE: this depends on the demo players (Ines Adeyemi, etc.) still
+-- existing. If you've already run 006_clear_seed_players.sql, skip this
+-- one too — there's nothing left for it to reference.
 
 insert into one_alphabet.matches
   (topic, player_a_id, player_b_id, judge_id, referee_id, tournament_id, league, winner_id, match_date, tags, ai_summary)

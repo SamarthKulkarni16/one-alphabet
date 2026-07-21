@@ -1,13 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import type { Session } from "@supabase/supabase-js";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
-import { sendMagicLink, registerPlayer } from "@/lib/queries";
+import { sendMagicLink, registerPlayer, getMyPlayer } from "@/lib/queries";
+import { Player } from "@/lib/types";
 
 export default function JoinPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [checkingSession, setCheckingSession] = useState(true);
+  const [profile, setProfile] = useState<Player | null>(null);
+  const [checkingProfile, setCheckingProfile] = useState(false);
 
   // Step 1: email → magic link
   const [email, setEmail] = useState("");
@@ -15,12 +19,10 @@ export default function JoinPage() {
   const [linkMessage, setLinkMessage] = useState("");
   const [sendingLink, setSendingLink] = useState(false);
 
-  // Step 2: registration, once signed in
+  // Step 2: registration, once signed in and no existing profile
   const [role, setRole] = useState<"player" | "judge">("player");
   const [registering, setRegistering] = useState(false);
-  const [result, setResult] = useState<{ ok: boolean; message: string } | null>(
-    null
-  );
+  const [registerError, setRegisterError] = useState("");
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
@@ -37,6 +39,18 @@ export default function JoinPage() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!session) {
+      setProfile(null);
+      return;
+    }
+    setCheckingProfile(true);
+    getMyPlayer().then((p) => {
+      setProfile(p);
+      setCheckingProfile(false);
+    });
+  }, [session]);
+
   async function handleSendLink(e: React.FormEvent) {
     e.preventDefault();
     setSendingLink(true);
@@ -49,45 +63,93 @@ export default function JoinPage() {
   async function handleRegister(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setRegistering(true);
+    setRegisterError("");
     const form = new FormData(e.currentTarget);
     const res = await registerPlayer({
       name: String(form.get("name") ?? ""),
       country: String(form.get("country") ?? ""),
       role,
     });
-    setResult(res);
+    if (res.ok) {
+      const p = await getMyPlayer();
+      setProfile(p);
+    } else {
+      setRegisterError(res.message);
+    }
     setRegistering(false);
   }
 
   async function handleSignOut() {
     if (!supabase) return;
     await supabase.auth.signOut();
-    setResult(null);
+    setProfile(null);
     setLinkSent(false);
     setLinkMessage("");
+    setEmail("");
   }
+
+  const loading = checkingSession || (session && checkingProfile);
 
   return (
     <div className="max-w-xl mx-auto px-6 py-20">
       <p className="font-data text-[13px] uppercase tracking-wider text-seal mb-4">
-        Register
+        {profile ? "Your Profile" : "Register"}
       </p>
-      <h1 className="font-display text-5xl mb-6">Join the League</h1>
-      <p className="text-ink-soft text-lg leading-relaxed mb-12">
-        Everyone starts unranked, at the bottom of the alphabet leagues. No
-        entry fee. One verified email, one rank.
-      </p>
+      <h1 className="font-display text-5xl mb-6">
+        {profile ? profile.name : "Join the League"}
+      </h1>
 
-      {checkingSession ? null : result?.ok ? (
-        <div className="border border-seal p-8">
-          <p className="font-display text-2xl mb-2 text-seal">{result.message}</p>
-          <p className="text-ink-soft text-[15px]">
-            You&rsquo;ll hear from us once the first open league forms in
-            your region.
-          </p>
+      {loading ? null : profile ? (
+        <div>
+          <div className="border border-rule p-8 mb-8">
+            <div className="flex items-baseline gap-4 mb-6">
+              <span className="font-display text-5xl text-seal">
+                {profile.rank}
+              </span>
+              <span className="font-data text-[13px] uppercase tracking-wider text-ink-soft">
+                {profile.league}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-4 font-data text-[13px] text-ink-soft border-t border-rule pt-6">
+              <div>
+                <p className="text-ink text-lg">
+                  {profile.wins}&ndash;{profile.losses}
+                </p>
+                <p>win&ndash;loss</p>
+              </div>
+              <div>
+                <p className="text-ink text-lg">{profile.judgedMatches}</p>
+                <p>judged</p>
+              </div>
+              <div>
+                <p className="text-ink text-lg">
+                  {profile.judgedMatches >= 10 ? "Yes" : "Not yet"}
+                </p>
+                <p>flagship-eligible</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-6">
+            <Link
+              href="/rankings"
+              className="font-data text-[13px] uppercase tracking-wider text-seal hover:underline"
+            >
+              View on the Ladder &rarr;
+            </Link>
+            <button
+              onClick={handleSignOut}
+              className="font-data text-[13px] uppercase tracking-wider text-ink-soft hover:text-ink"
+            >
+              Sign out
+            </button>
+          </div>
         </div>
       ) : session ? (
         <form onSubmit={handleRegister} className="space-y-8">
+          <p className="text-ink-soft text-lg leading-relaxed">
+            Everyone starts unranked, at the bottom of the alphabet leagues.
+            No entry fee. One verified email, one rank.
+          </p>
           <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft">
             Signed in as{" "}
             <span className="text-ink">{session.user.email}</span>{" "}
@@ -149,8 +211,8 @@ export default function JoinPage() {
             </p>
           )}
 
-          {result && !result.ok && (
-            <p className="font-data text-[12px] text-seal">{result.message}</p>
+          {registerError && (
+            <p className="font-data text-[12px] text-seal">{registerError}</p>
           )}
 
           <button
@@ -163,6 +225,10 @@ export default function JoinPage() {
         </form>
       ) : (
         <div>
+          <p className="text-ink-soft text-lg leading-relaxed mb-12">
+            Everyone starts unranked, at the bottom of the alphabet leagues.
+            No entry fee. One verified email, one rank.
+          </p>
           {linkSent ? (
             <div className="border border-rule p-8">
               <p className="font-display text-2xl mb-2">Check your inbox.</p>

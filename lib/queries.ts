@@ -103,6 +103,31 @@ export async function sendMagicLink(
   return { ok: true, message: "Check your email for a sign-in link." };
 }
 
+export async function getMyPlayer(): Promise<Player | null> {
+  if (!isSupabaseConfigured || !supabase) return null;
+  const { data: sessionData } = await supabase.auth.getSession();
+  const uid = sessionData.session?.user.id;
+  if (!uid) return null;
+  const { data, error } = await supabase
+    .from("players")
+    .select("*")
+    .eq("user_id", uid)
+    .maybeSingle();
+  if (error || !data) return null;
+  return {
+    id: data.id,
+    name: data.name,
+    rank: data.rank,
+    league: data.league,
+    judgedMatches: data.judged_matches,
+    wins: data.wins,
+    losses: data.losses,
+    joinedAt: data.joined_at,
+    country: data.country,
+    bio: data.bio ?? undefined,
+  };
+}
+
 export async function registerPlayer(input: {
   name: string;
   country: string;
