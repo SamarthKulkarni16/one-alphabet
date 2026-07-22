@@ -60,7 +60,7 @@ export default async function RankingsPage() {
                 >
                   <span
                     className={`font-display text-2xl ${
-                      p.rank === "A" ? "text-seal" : "text-ink"
+                      p.rank === "A" ? "text-[var(--gold)]" : "text-ink"
                     }`}
                   >
                     {p.rank}

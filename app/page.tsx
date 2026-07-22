@@ -2,13 +2,17 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import AlphabetLadder from "@/components/AlphabetLadder";
-import { getMatches, getTournaments, getPlayers } from "@/lib/queries";
+import VSCard from "@/components/VSCard";
+import { getMatches, getTournaments, getPlayers, getPlayerLookup } from "@/lib/queries";
+import { getLiveBattles } from "@/lib/battle";
 
 export default async function Home() {
-  const [matches, tournaments, players] = await Promise.all([
+  const [matches, tournaments, players, liveBattles, playerLookup] = await Promise.all([
     getMatches(),
     getTournaments(),
     getPlayers(),
+    getLiveBattles(),
+    getPlayerLookup(),
   ]);
   const featured = matches[0];
   const activeTournaments = tournaments.filter((t) => t.status === "active");
@@ -55,6 +59,43 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* Live now */}
+      {liveBattles.length > 0 && (
+        <section className="border-b border-rule bg-paper-dim">
+          <div className="max-w-6xl mx-auto px-6 py-16">
+            <div className="flex items-baseline justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <span className="w-2 h-2 rounded-full bg-seal animate-pulse" />
+                <h2 className="font-display text-2xl">Live Now</h2>
+              </div>
+              <Link
+                href="/watch"
+                className="font-data text-[13px] uppercase tracking-wider text-ink-soft hover:text-seal"
+              >
+                Watch all &rarr;
+              </Link>
+            </div>
+            <div className="space-y-4">
+              {liveBattles.slice(0, 3).map((b) => {
+                const a = playerLookup.get(b.playerAId);
+                const bp = playerLookup.get(b.playerBId);
+                if (!a || !bp) return null;
+                return (
+                  <VSCard
+                    key={b.id}
+                    playerA={{ id: a.id, name: a.name, rank: a.rank, league: a.league }}
+                    playerB={{ id: bp.id, name: bp.name, rank: bp.rank, league: bp.league }}
+                    status="live"
+                    compact
+                    href={`/watch/${b.id}`}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* How it works */}
       <section className="max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-3 gap-12">
@@ -158,7 +199,7 @@ export default async function Home() {
           </p>
           {ace && (
             <Link href="/rankings" className="group block">
-              <p className="font-display text-4xl text-seal mb-1">
+              <p className="font-display text-4xl text-[var(--gold)] mb-1">
                 {ace.rank}
               </p>
               <h3 className="font-display text-2xl group-hover:text-seal transition-colors mb-2">
