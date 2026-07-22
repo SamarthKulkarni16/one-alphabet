@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getMatches, getPlayerLookup } from "@/lib/queries";
+import VSCard from "@/components/VSCard";
 
 export const metadata = { title: "Archive | One Alphabet" };
 export const dynamic = "force-dynamic";
@@ -46,7 +47,6 @@ export default async function ArchivePage() {
           const a = getPlayer(m.playerAId);
           const b = getPlayer(m.playerBId);
           const judge = getPlayer(m.judgeId);
-          const winner = m.winnerId ? getPlayer(m.winnerId) : null;
           return (
             <Link
               key={m.id}
@@ -82,28 +82,20 @@ export default async function ArchivePage() {
                 )}
               </p>
 
-              <div className="flex flex-wrap items-center gap-x-8 gap-y-3 mb-5 font-data text-[12px] text-ink-soft">
-                <span>
-                  {a?.rank} {a?.name}
-                  {winner?.id === a?.id && (
-                    <span className="text-seal ml-1">&#9679; won</span>
-                  )}
-                  {m.winnerId && a && winner?.id !== a?.id && (
-                    <span className="ml-1 opacity-60">lost</span>
-                  )}
-                </span>
-                <span className="text-rule">vs</span>
-                <span>
-                  {b?.rank} {b?.name}
-                  {winner?.id === b?.id && (
-                    <span className="text-seal ml-1">&#9679; won</span>
-                  )}
-                  {m.winnerId && b && winner?.id !== b?.id && (
-                    <span className="ml-1 opacity-60">lost</span>
-                  )}
-                </span>
+              {a && b && (
+                <div className="mb-5">
+                  <VSCard
+                    playerA={{ id: a.id, name: a.name, rank: a.rank, league: a.league }}
+                    playerB={{ id: b.id, name: b.name, rank: b.rank, league: b.league }}
+                    status="completed"
+                    winnerId={m.winnerId}
+                    compact
+                  />
+                </div>
+              )}
+              <div className="flex flex-wrap items-center gap-x-8 gap-y-2 mb-5 font-data text-[12px] text-ink-soft">
                 {!m.winnerId && m.judgeStatus === "judged" && (
-                  <span className="text-ink-soft italic">tie</span>
+                  <span className="italic">tie</span>
                 )}
                 {judge && <span>Judged by {judge.name}</span>}
               </div>

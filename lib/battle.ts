@@ -277,6 +277,41 @@ export async function setBattleTopic(battleId: string, topic: string): Promise<v
   await supabase.rpc("set_battle_topic", { battle_id: battleId, new_topic: topic });
 }
 
+// ── Spectating ──
+// Public reads, backed by the "public read live battles" / "public read
+// live turns" policies in 018_spectator_mode.sql. No signed-in player
+// required — this is what powers /watch and /watch/[id].
+
+export async function getLiveBattles(): Promise<Battle[]> {
+  if (!isSupabaseConfigured || !supabase) return [];
+  const { data, error } = await supabase
+    .from("battles")
+    .select("*")
+    .eq("status", "live")
+    .order("started_at", { ascending: false });
+  if (error || !data) return [];
+  return data.map(mapBattle);
+}
+
+// Fires on any battle flipping to/from live, or being updated while live —
+// callers should re-run getLiveBattles() on each event rather than trying
+// to patch a single row, since a battle going from live -> completed means
+// it should drop off the list entirely.
+export function subscribeToLiveBattles(onChange: () => void): () => void {
+  if (!supabase) return () => {};
+  const channel = supabase
+    .channel("live-battles")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "one_alphabet", table: "battles" },
+      () => onChange()
+    )
+    .subscribe();
+  return () => {
+    supabase!.removeChannel(channel);
+  };
+}
+
 export function subscribeToBattle(
   battleId: string,
   onChange: (battle: Battle) => void

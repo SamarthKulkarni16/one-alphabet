@@ -9,6 +9,13 @@ import { triggerJudging } from "@/lib/judge";
 import { Player, Battle } from "@/lib/types";
 import TextBattle from "@/components/TextBattle";
 import AudioBattle from "@/components/AudioBattle";
+import VSCard, { VSCardStatus } from "@/components/VSCard";
+
+function toVSCardStatus(status: Battle["status"]): VSCardStatus {
+  if (status === "live") return "live";
+  if (status === "completed" || status === "abandoned") return "completed";
+  return "scheduled";
+}
 
 export default function BattleRoomPage() {
   const { id } = useParams<{ id: string }>();
@@ -74,12 +81,16 @@ export default function BattleRoomPage() {
       <p className="font-data text-[13px] uppercase tracking-wider text-seal mb-4">
         {battle.format === "text" ? "Text Battle" : "Audio Battle"}
       </p>
-      <h1 className="font-display text-4xl mb-2">
-        You vs {opponent?.name ?? "\u2026"}
-      </h1>
-      <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-10">
-        {battle.status}
-      </p>
+      {opponent && (
+        <div className="mb-10">
+          <VSCard
+            playerA={{ id: profile.id, name: profile.name, rank: profile.rank, league: profile.league }}
+            playerB={{ id: opponent.id, name: opponent.name, rank: opponent.rank, league: opponent.league }}
+            status={toVSCardStatus(battle.status)}
+            topic={battle.topic}
+          />
+        </div>
+      )}
 
       <div className={battle.status === "live" ? "" : "border border-rule p-8 mb-8"}>
         {battle.status === "waiting" && (

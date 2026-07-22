@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
       privacy: "public",
       properties: {
         exp: expiresAt,
-        max_participants: 2,
+        max_participants: 22, // 2 debaters + up to 20 listen-only spectators
         enable_recording: "cloud-audio-only",
         enable_screenshare: false,
         enable_chat: false,
