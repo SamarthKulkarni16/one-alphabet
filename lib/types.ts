@@ -46,6 +46,7 @@ export interface Match {
   battleId?: string;
   judgeStatus?: "pending" | "judging" | "judged" | "failed";
   judgeError?: string;
+  judgeReasoning?: string;
 }
 
 export interface Tournament {
@@ -79,6 +80,7 @@ export interface Battle {
   endedAt: string | null;
   dailyRoomName: string | null;
   dailyRoomUrl: string | null;
+  endRequestedBy: string | null;
   recordingUrl: string | null;
   transcript: string | null;
   createdAt: string;

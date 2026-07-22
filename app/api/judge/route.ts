@@ -20,7 +20,11 @@ If this is an audio recording: match voices to names using any self-introduction
 Judge on the strength of reasoning, use of perspective, clarity of communication, and how respectfully they engaged with disagreement — not on volume, aggression, or who spoke more.
 
 Respond with ONLY a JSON object, no other text, in this exact shape:
-{"winner": "A" | "B" | "tie", "summary": "2-4 sentences, written for a public archive, describing what the debate was about and why the stronger side won (or why it was a tie). Do not quote either speaker directly — describe their arguments in your own words."}`;
+{
+  "winner": "A" | "B" | "tie",
+  "summary": "1-2 sentences for a public archive listing: what the debate was about and who won (or that it was a tie).",
+  "reasoning": "A fuller paragraph (4-8 sentences) explaining the verdict in detail: the strongest points each side made, where one side's reasoning or perspective was sharper than the other's, and specifically why that tipped the decision. Written for someone who wants to understand the judge's actual thinking, not just the headline. Do not quote either speaker directly — describe their arguments in your own words."
+}`;
 }
 
 async function callGemini(apiKey: string, parts: any[]) {
@@ -44,7 +48,7 @@ async function callGemini(apiKey: string, parts: any[]) {
   }
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!text) throw new Error("Gemini returned no content");
-  return JSON.parse(text) as { winner: "A" | "B" | "tie"; summary: string };
+  return JSON.parse(text) as { winner: "A" | "B" | "tie"; summary: string; reasoning: string };
 }
 
 export async function POST(req: NextRequest) {
@@ -194,9 +198,15 @@ export async function POST(req: NextRequest) {
       match_id: matchId,
       winner_player_id: winnerPlayerId,
       summary: verdict.summary,
+      reasoning: verdict.reasoning,
     });
 
-    return NextResponse.json({ status: "judged", winnerId: winnerPlayerId, summary: verdict.summary });
+    return NextResponse.json({
+      status: "judged",
+      winnerId: winnerPlayerId,
+      summary: verdict.summary,
+      reasoning: verdict.reasoning,
+    });
   } catch (err: any) {
     await supabase.rpc("mark_match_judge_failed", {
       match_id: matchId,

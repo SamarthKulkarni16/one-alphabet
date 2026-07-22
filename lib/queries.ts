@@ -61,6 +61,7 @@ export async function getMatches(): Promise<Match[]> {
       battleId: m.battle_id ?? undefined,
       judgeStatus: m.judge_status ?? "judged",
       judgeError: m.judge_error ?? undefined,
+      judgeReasoning: m.judge_reasoning ?? undefined,
     })
   );
 }
@@ -94,6 +95,7 @@ export async function getMatchById(id: string): Promise<Match | null> {
     battleId: data.battle_id ?? undefined,
     judgeStatus: data.judge_status ?? "judged",
     judgeError: data.judge_error ?? undefined,
+    judgeReasoning: data.judge_reasoning ?? undefined,
   };
 }
 
@@ -124,6 +126,7 @@ export async function getMatchByBattleId(battleId: string): Promise<Match | null
     battleId: data.battle_id ?? undefined,
     judgeStatus: data.judge_status ?? "judged",
     judgeError: data.judge_error ?? undefined,
+    judgeReasoning: data.judge_reasoning ?? undefined,
   };
 }
 

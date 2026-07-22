@@ -1,7 +1,7 @@
 import { supabase } from "./supabase";
 
 export type JudgeResult =
-  | { status: "judged"; winnerId: string | null; summary: string }
+  | { status: "judged"; winnerId: string | null; summary: string; reasoning: string }
   | { status: "judging" }
   | { status: "pending"; reason?: string }
   | { status: "failed"; reason?: string }

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { getTurns, sendTurn, subscribeToTurns, endBattle } from "@/lib/battle";
 import { Battle, BattleTurn, Player } from "@/lib/types";
+import EndBattleControl from "@/components/EndBattleControl";
 
 function formatClock(seconds: number): string {
   const m = Math.floor(Math.max(seconds, 0) / 60);
@@ -138,15 +139,7 @@ export default function TextBattle({
         </button>
       </div>
 
-      <button
-        onClick={() => {
-          endedRef.current = true;
-          endBattle(battle.id);
-        }}
-        className="font-data text-[12px] uppercase tracking-wider text-ink-soft hover:text-seal transition-colors"
-      >
-        End battle early
-      </button>
+      <EndBattleControl battle={battle} profile={profile} opponent={opponent} />
     </div>
   );
 }

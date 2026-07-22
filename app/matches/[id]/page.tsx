@@ -165,6 +165,17 @@ export default function MatchPage() {
       )}
       {match.aiSummary && <div className="mb-6" />}
 
+      {match.judgeReasoning && (
+        <div className="mb-10">
+          <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-4">
+            Judge&rsquo;s Reasoning
+          </p>
+          <p className="text-ink-soft text-[15px] leading-relaxed max-w-2xl border-l-2 border-seal pl-6">
+            {match.judgeReasoning}
+          </p>
+        </div>
+      )}
+
       {match.tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-10">
           {match.tags.map((tag) => (

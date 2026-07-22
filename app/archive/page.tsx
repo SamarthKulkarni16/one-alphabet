@@ -72,7 +72,13 @@ export default async function ArchivePage() {
 
               <p className="text-ink-soft text-[15px] leading-relaxed mb-5 max-w-2xl">
                 {m.aiSummary || (
-                  <span className="italic">Awaiting AI judgment.</span>
+                  <span className="italic">
+                    {m.judgeStatus === "judging"
+                      ? "The AI judge is reviewing this match\u2026"
+                      : m.judgeStatus === "failed"
+                      ? "Judging failed \u2014 will retry."
+                      : "Awaiting AI judgment."}
+                  </span>
                 )}
               </p>
 
@@ -82,6 +88,9 @@ export default async function ArchivePage() {
                   {winner?.id === a?.id && (
                     <span className="text-seal ml-1">&#9679; won</span>
                   )}
+                  {m.winnerId && a && winner?.id !== a?.id && (
+                    <span className="ml-1 opacity-60">lost</span>
+                  )}
                 </span>
                 <span className="text-rule">vs</span>
                 <span>
@@ -89,9 +98,12 @@ export default async function ArchivePage() {
                   {winner?.id === b?.id && (
                     <span className="text-seal ml-1">&#9679; won</span>
                   )}
+                  {m.winnerId && b && winner?.id !== b?.id && (
+                    <span className="ml-1 opacity-60">lost</span>
+                  )}
                 </span>
-                {!m.winnerId && (
-                  <span className="text-ink-soft italic">undecided</span>
+                {!m.winnerId && m.judgeStatus === "judged" && (
+                  <span className="text-ink-soft italic">tie</span>
                 )}
                 {judge && <span>Judged by {judge.name}</span>}
               </div>

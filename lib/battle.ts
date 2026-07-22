@@ -18,6 +18,7 @@ function mapBattle(b: any): Battle {
     endedAt: b.ended_at,
     dailyRoomName: b.daily_room_name,
     dailyRoomUrl: b.daily_room_url,
+    endRequestedBy: b.end_requested_by,
     recordingUrl: b.recording_url,
     transcript: b.transcript,
     createdAt: b.created_at,
@@ -253,6 +254,22 @@ export async function markBattleLive(battleId: string): Promise<void> {
 export async function endBattle(battleId: string): Promise<void> {
   if (!isSupabaseConfigured || !supabase) return;
   await supabase.rpc("complete_battle", { battle_id: battleId });
+}
+
+// Manual "end early" goes through mutual consent — this is NOT the same as
+// endBattle() above, which is only for the timer running out (already
+// mutually agreed when the battle started).
+export async function requestEndBattle(
+  battleId: string
+): Promise<"requested" | "already_requested" | "confirmed" | "not_live"> {
+  if (!isSupabaseConfigured || !supabase) return "not_live";
+  const { data } = await supabase.rpc("request_end_battle", { battle_id: battleId });
+  return (data as any) ?? "not_live";
+}
+
+export async function cancelEndRequest(battleId: string): Promise<void> {
+  if (!isSupabaseConfigured || !supabase) return;
+  await supabase.rpc("cancel_end_request", { battle_id: battleId });
 }
 
 export async function setBattleTopic(battleId: string, topic: string): Promise<void> {

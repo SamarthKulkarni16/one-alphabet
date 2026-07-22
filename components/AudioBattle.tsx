@@ -5,6 +5,7 @@ import DailyIframe, { DailyCall } from "@daily-co/daily-js";
 import { supabase } from "@/lib/supabase";
 import { endBattle } from "@/lib/battle";
 import { Battle, Player } from "@/lib/types";
+import EndBattleControl from "@/components/EndBattleControl";
 
 function formatClock(seconds: number): string {
   const m = Math.floor(Math.max(seconds, 0) / 60);
@@ -116,12 +117,6 @@ export default function AudioBattle({
     setMuted(next);
   }
 
-  function handleLeave() {
-    endedRef.current = true;
-    callRef.current?.leave();
-    endBattle(battle.id);
-  }
-
   const lowTime = secondsLeft !== null && secondsLeft <= 30;
 
   return (
@@ -171,7 +166,7 @@ export default function AudioBattle({
         </div>
       )}
 
-      <div className="flex gap-4">
+      <div className="flex gap-4 mb-6">
         {status === "joined" && (
           <button
             onClick={toggleMute}
@@ -180,13 +175,9 @@ export default function AudioBattle({
             {muted ? "Unmute" : "Mute"}
           </button>
         )}
-        <button
-          onClick={handleLeave}
-          className="font-data text-[13px] uppercase tracking-wider text-ink-soft hover:text-seal transition-colors"
-        >
-          End Battle
-        </button>
       </div>
+
+      <EndBattleControl battle={battle} profile={profile} opponent={opponent} />
     </div>
   );
 }
