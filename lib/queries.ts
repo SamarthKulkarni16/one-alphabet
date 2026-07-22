@@ -58,6 +58,9 @@ export async function getMatches(): Promise<Match[]> {
       videoUrl: m.video_url ?? undefined,
       transcriptUrl: m.transcript_url ?? undefined,
       transcript: m.transcript ?? undefined,
+      battleId: m.battle_id ?? undefined,
+      judgeStatus: m.judge_status ?? "judged",
+      judgeError: m.judge_error ?? undefined,
     })
   );
 }
@@ -88,6 +91,39 @@ export async function getMatchById(id: string): Promise<Match | null> {
     videoUrl: data.video_url ?? undefined,
     transcriptUrl: data.transcript_url ?? undefined,
     transcript: data.transcript ?? undefined,
+    battleId: data.battle_id ?? undefined,
+    judgeStatus: data.judge_status ?? "judged",
+    judgeError: data.judge_error ?? undefined,
+  };
+}
+
+export async function getMatchByBattleId(battleId: string): Promise<Match | null> {
+  if (!isSupabaseConfigured || !supabase) return null;
+  const { data, error } = await supabase
+    .from("matches")
+    .select("*")
+    .eq("battle_id", battleId)
+    .maybeSingle();
+  if (error || !data) return null;
+  return {
+    id: data.id,
+    topic: data.topic,
+    playerAId: data.player_a_id,
+    playerBId: data.player_b_id,
+    judgeId: data.judge_id,
+    refereeId: data.referee_id,
+    tournament: data.tournament_id,
+    league: data.league,
+    winnerId: data.winner_id,
+    date: data.match_date,
+    tags: data.tags ?? [],
+    aiSummary: data.ai_summary ?? "",
+    videoUrl: data.video_url ?? undefined,
+    transcriptUrl: data.transcript_url ?? undefined,
+    transcript: data.transcript ?? undefined,
+    battleId: data.battle_id ?? undefined,
+    judgeStatus: data.judge_status ?? "judged",
+    judgeError: data.judge_error ?? undefined,
   };
 }
 

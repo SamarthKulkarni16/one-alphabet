@@ -43,6 +43,9 @@ export interface Match {
   videoUrl?: string;
   transcriptUrl?: string;
   transcript?: string;
+  battleId?: string;
+  judgeStatus?: "pending" | "judging" | "judged" | "failed";
+  judgeError?: string;
 }
 
 export interface Tournament {

@@ -4,7 +4,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { getMatchById, getPlayerLookup } from "@/lib/queries";
+import { triggerJudging, JudgeResult } from "@/lib/judge";
+import { supabase } from "@/lib/supabase";
 import { Match, Player } from "@/lib/types";
+
+const MAX_AUTO_RETRIES = 8; // ~2 minutes at 15s apart — covers Daily's recording processing delay
 
 export default function MatchPage() {
   const { id } = useParams<{ id: string }>();
@@ -12,6 +16,8 @@ export default function MatchPage() {
   const [playerLookup, setPlayerLookup] = useState<Map<string, Player>>(new Map());
   const [recordingLink, setRecordingLink] = useState<string | null>(null);
   const [recordingState, setRecordingState] = useState<"idle" | "loading" | "error">("idle");
+  const [signedIn, setSignedIn] = useState(false);
+  const [judging, setJudging] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -20,6 +26,38 @@ export default function MatchPage() {
       setPlayerLookup(lookup);
     });
   }, [id]);
+
+  useEffect(() => {
+    if (!supabase) return;
+    supabase.auth.getSession().then(({ data }) => setSignedIn(Boolean(data.session)));
+  }, []);
+
+  async function runJudging(matchId: string, attemptsLeft: number) {
+    setJudging(true);
+    const result: JudgeResult = await triggerJudging(matchId);
+    if (result.status === "judged") {
+      const refreshed = await getMatchById(matchId);
+      setMatch(refreshed);
+      setJudging(false);
+      return;
+    }
+    if ((result.status === "pending" || result.status === "judging") && attemptsLeft > 0) {
+      setTimeout(() => runJudging(matchId, attemptsLeft - 1), 15000);
+      return;
+    }
+    setJudging(false);
+    const refreshed = await getMatchById(matchId);
+    setMatch(refreshed);
+  }
+
+  useEffect(() => {
+    if (!match || !signedIn) return;
+    if (match.judgeStatus === "judged" || judging) return;
+    if (match.judgeStatus === "pending" || match.judgeStatus === "failed") {
+      runJudging(match.id, MAX_AUTO_RETRIES);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [match?.id, match?.judgeStatus, signedIn]);
 
   async function loadRecording() {
     if (!match) return;
@@ -100,14 +138,32 @@ export default function MatchPage() {
         {judge && <span>Judged by {judge.name}</span>}
       </div>
 
-      <p className="text-ink-soft text-[16px] leading-relaxed mb-10 max-w-2xl">
+      <p className="text-ink-soft text-[16px] leading-relaxed mb-4 max-w-2xl">
         {match.aiSummary || (
           <span className="italic">
-            Awaiting AI judgment &mdash; the transcript below is the full,
-            unedited record.
+            {match.judgeStatus === "judging" || judging
+              ? "The AI judge is reviewing this match\u2026"
+              : match.judgeStatus === "failed"
+              ? "Judging failed \u2014 will retry automatically, or try again below."
+              : "Awaiting AI judgment \u2014 the record below is the full, unedited match."}
           </span>
         )}
       </p>
+
+      {!match.aiSummary && signedIn && !judging && (
+        <button
+          onClick={() => runJudging(match.id, MAX_AUTO_RETRIES)}
+          className="font-data text-[12px] uppercase tracking-wider text-seal hover:underline mb-10 block"
+        >
+          {match.judgeStatus === "failed" ? "Retry Judging" : "Judge This Match Now"}
+        </button>
+      )}
+      {!match.aiSummary && !signedIn && (
+        <p className="font-data text-[12px] text-ink-soft mb-10">
+          <Link href="/join" className="text-seal hover:underline">Sign in</Link> to trigger AI judging.
+        </p>
+      )}
+      {match.aiSummary && <div className="mb-6" />}
 
       {match.tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-10">

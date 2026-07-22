@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { getMyPlayer, getPlayerById } from "@/lib/queries";
+import { getMyPlayer, getPlayerById, getMatchByBattleId } from "@/lib/queries";
 import { getBattle, markBattleLive, subscribeToBattle, setBattleTopic } from "@/lib/battle";
+import { triggerJudging } from "@/lib/judge";
 import { Player, Battle } from "@/lib/types";
 import TextBattle from "@/components/TextBattle";
 import AudioBattle from "@/components/AudioBattle";
@@ -38,6 +39,13 @@ export default function BattleRoomPage() {
       battle.playerAId === profile.id ? battle.playerBId : battle.playerAId;
     getPlayerById(opponentId).then(setOpponent);
   }, [battle, profile]);
+
+  useEffect(() => {
+    if (battle?.status !== "completed") return;
+    getMatchByBattleId(battle.id).then((match) => {
+      if (match) triggerJudging(match.id);
+    });
+  }, [battle?.status, battle?.id]);
 
   if (loading) return null;
 
