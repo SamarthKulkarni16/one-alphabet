@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
       privacy: "public",
       properties: {
         exp: expiresAt,
-        max_participants: 22, // 2 debaters + up to 20 listen-only spectators
+        max_participants: 200, // Daily's self-serve ceiling — 2 debaters + up to 198 spectators. Going higher needs a direct request to Daily.
         enable_recording: "cloud-audio-only",
         enable_screenshare: false,
         enable_chat: false,
