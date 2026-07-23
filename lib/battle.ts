@@ -22,6 +22,7 @@ function mapBattle(b: any): Battle {
     recordingUrl: b.recording_url,
     transcript: b.transcript,
     createdAt: b.created_at,
+    isPrivate: b.is_private ?? false,
   };
 }
 
@@ -35,6 +36,7 @@ function mapChallenge(c: any): BattleChallenge {
     battleId: c.battle_id,
     createdAt: c.created_at,
     respondedAt: c.responded_at,
+    isPrivate: c.is_private ?? false,
   };
 }
 
@@ -52,12 +54,16 @@ function mapTurn(t: any): BattleTurn {
 
 export async function joinQueue(
   playerId: string,
-  format: BattleFormat
+  format: BattleFormat,
+  isPrivate: boolean = false
 ): Promise<{ ok: boolean; message?: string }> {
   if (!isSupabaseConfigured || !supabase) return { ok: false, message: "Not connected." };
   const { error } = await supabase
     .from("battle_queue")
-    .upsert({ player_id: playerId, format }, { onConflict: "player_id,format" });
+    .upsert(
+      { player_id: playerId, format, is_private: isPrivate },
+      { onConflict: "player_id,format" }
+    );
   if (error) return { ok: false, message: error.message };
   return { ok: true };
 }
@@ -127,12 +133,13 @@ export function pollForMatch(
 export async function sendChallenge(
   challengerId: string,
   opponentId: string,
-  format: BattleFormat
+  format: BattleFormat,
+  isPrivate: boolean = false
 ): Promise<{ ok: boolean; message?: string }> {
   if (!isSupabaseConfigured || !supabase) return { ok: false, message: "Not connected." };
   const { error } = await supabase
     .from("battle_challenges")
-    .insert({ challenger_id: challengerId, opponent_id: opponentId, format });
+    .insert({ challenger_id: challengerId, opponent_id: opponentId, format, is_private: isPrivate });
   if (error) return { ok: false, message: error.message };
   return { ok: true };
 }

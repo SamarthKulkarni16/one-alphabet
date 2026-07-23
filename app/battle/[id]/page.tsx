@@ -80,6 +80,9 @@ export default function BattleRoomPage() {
     <div className="max-w-xl mx-auto px-6 py-20">
       <p className="font-data text-[13px] uppercase tracking-wider text-seal mb-4">
         {battle.format === "text" ? "Text Battle" : "Audio Battle"}
+        {battle.isPrivate && (
+          <span className="ml-3 text-ink-soft">&middot; Private &mdash; won&rsquo;t be archived</span>
+        )}
       </p>
       {opponent && (
         <div className="mb-10">

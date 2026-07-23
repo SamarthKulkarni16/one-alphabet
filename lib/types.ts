@@ -47,6 +47,7 @@ export interface Match {
   judgeStatus?: "pending" | "judging" | "judged" | "failed";
   judgeError?: string;
   judgeReasoning?: string;
+  isPrivate?: boolean;
 }
 
 export interface Tournament {
@@ -84,6 +85,7 @@ export interface Battle {
   recordingUrl: string | null;
   transcript: string | null;
   createdAt: string;
+  isPrivate: boolean;
 }
 
 export interface BattleChallenge {
@@ -95,6 +97,7 @@ export interface BattleChallenge {
   battleId: string | null;
   createdAt: string;
   respondedAt: string | null;
+  isPrivate: boolean;
 }
 
 export interface BattleTurn {

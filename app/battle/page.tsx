@@ -25,6 +25,7 @@ export default function BattlePage() {
   const [profile, setProfile] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);
   const [format, setFormat] = useState<BattleFormat>("text");
+  const [isPrivate, setIsPrivate] = useState(false);
 
   const [inQueue, setInQueue] = useState(false);
   const [queueSince, setQueueSince] = useState<string | null>(null);
@@ -85,7 +86,7 @@ export default function BattlePage() {
   async function handleJoinQueue() {
     if (!profile) return;
     const since = new Date().toISOString();
-    const res = await joinQueue(profile.id, format);
+    const res = await joinQueue(profile.id, format, isPrivate);
     if (!res.ok) return;
     setInQueue(true);
     setQueueSince(since);
@@ -106,7 +107,7 @@ export default function BattlePage() {
   async function handleChallenge(opponentId: string) {
     if (!profile) return;
     setChallengeMessage("");
-    const res = await sendChallenge(profile.id, opponentId, format);
+    const res = await sendChallenge(profile.id, opponentId, format, isPrivate);
     setChallengeMessage(res.ok ? "Challenge sent." : res.message ?? "Could not send challenge.");
     refreshChallenges();
   }
@@ -155,7 +156,7 @@ export default function BattlePage() {
       </p>
       <h1 className="font-display text-4xl mb-10">Find an opponent.</h1>
 
-      <div className="flex gap-px bg-rule border border-rule w-fit mb-10">
+      <div className="flex gap-px bg-rule border border-rule w-fit mb-6">
         {(["text", "audio"] as const).map((f) => (
           <button
             key={f}
@@ -174,13 +175,30 @@ export default function BattlePage() {
         ))}
       </div>
 
+      <label className="flex items-start gap-3 mb-10 cursor-pointer w-fit">
+        <input
+          type="checkbox"
+          checked={isPrivate}
+          disabled={inQueue}
+          onChange={(e) => setIsPrivate(e.target.checked)}
+          className="mt-1 accent-seal disabled:cursor-not-allowed"
+        />
+        <span className="text-ink-soft text-[14px] leading-snug">
+          Keep this battle private
+          <span className="block font-data text-[11px] uppercase tracking-wider mt-0.5">
+            Won&rsquo;t appear in the archive or Watch Live
+          </span>
+        </span>
+      </label>
+
       <div className="border border-rule p-8 mb-12">
         {inQueue ? (
           <div>
             <p className="font-display text-2xl mb-2">Finding an opponent&hellip;</p>
             <p className="text-ink-soft text-[15px] mb-6">
               You&rsquo;ll be moved into the battle room automatically the
-              moment someone else queues up for {format}.
+              moment someone else queues up for {format}
+              {isPrivate ? ", also looking for a private match" : ""}.
             </p>
             <button
               onClick={handleLeaveQueue}
@@ -223,8 +241,7 @@ export default function BattlePage() {
                       {from?.name ?? "Unknown player"}
                     </p>
                     <p className="font-data text-[11px] text-ink-soft uppercase tracking-wider">
-                      {c.format} battle
-                    </p>
+                      {c.format} battle{c.isPrivate ? " \u00b7 private" : ""}                    </p>
                   </div>
                   <div className="flex gap-3">
                     <button
@@ -265,7 +282,7 @@ export default function BattlePage() {
                       {to?.name ?? "Unknown player"}
                     </p>
                     <p className="font-data text-[11px] text-ink-soft uppercase tracking-wider">
-                      {c.format} battle &middot; waiting
+                      {c.format} battle{c.isPrivate ? " \u00b7 private" : ""} &middot; waiting
                     </p>
                   </div>
                   <button

@@ -39,6 +39,7 @@ export async function getMatches(): Promise<Match[]> {
   const { data, error } = await supabase
     .from("matches")
     .select("*")
+    .eq("is_private", false)
     .order("match_date", { ascending: false });
   if (error || !data) return mockMatches;
   return data.map(
@@ -62,6 +63,7 @@ export async function getMatches(): Promise<Match[]> {
       judgeStatus: m.judge_status ?? "judged",
       judgeError: m.judge_error ?? undefined,
       judgeReasoning: m.judge_reasoning ?? undefined,
+      isPrivate: m.is_private ?? false,
     })
   );
 }
@@ -96,6 +98,7 @@ export async function getMatchById(id: string): Promise<Match | null> {
     judgeStatus: data.judge_status ?? "judged",
     judgeError: data.judge_error ?? undefined,
     judgeReasoning: data.judge_reasoning ?? undefined,
+    isPrivate: data.is_private ?? false,
   };
 }
 
@@ -127,6 +130,7 @@ export async function getMatchByBattleId(battleId: string): Promise<Match | null
     judgeStatus: data.judge_status ?? "judged",
     judgeError: data.judge_error ?? undefined,
     judgeReasoning: data.judge_reasoning ?? undefined,
+    isPrivate: data.is_private ?? false,
   };
 }
 
@@ -181,6 +185,7 @@ export async function getMatchesForPlayer(playerId: string): Promise<Match[]> {
       aiSummary: m.ai_summary ?? "",
       videoUrl: m.video_url ?? undefined,
       transcriptUrl: m.transcript_url ?? undefined,
+      isPrivate: m.is_private ?? false,
     })
   );
 }
