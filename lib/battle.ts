@@ -289,8 +289,23 @@ export async function setBattleTopic(battleId: string, topic: string): Promise<v
 // live turns" policies in 018_spectator_mode.sql. No signed-in player
 // required — this is what powers /watch and /watch/[id].
 
+// Sweeps and closes out any battle stuck at status='live' past its timer
+// (see 020_reap_stale_battles.sql for why this is needed at all — briefly,
+// nobody's browser may be open to fire the normal client-side endBattle()
+// call). Fire-and-forget: if it fails, the stale battle just shows up one
+// more time and gets caught on the next sweep.
+export async function reapStaleBattles(): Promise<void> {
+  if (!isSupabaseConfigured || !supabase) return;
+  try {
+    await supabase.rpc("reap_stale_battles");
+  } catch {
+    // best-effort — never block the page on this
+  }
+}
+
 export async function getLiveBattles(): Promise<Battle[]> {
   if (!isSupabaseConfigured || !supabase) return [];
+  await reapStaleBattles();
   const { data, error } = await supabase
     .from("battles")
     .select("*")

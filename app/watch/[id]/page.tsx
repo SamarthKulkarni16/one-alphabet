@@ -9,6 +9,7 @@ import {
   subscribeToBattle,
   getTurns,
   subscribeToTurns,
+  reapStaleBattles,
 } from "@/lib/battle";
 import { getPlayerById, getMatchByBattleId } from "@/lib/queries";
 import { Battle, BattleTurn, Player } from "@/lib/types";
@@ -39,7 +40,7 @@ export default function WatchBattlePage() {
   // ── Load the battle, watch for it ending ──
   useEffect(() => {
     if (!id) return;
-    getBattle(id).then((b) => setBattle(b));
+    reapStaleBattles().then(() => getBattle(id)).then((b) => setBattle(b));
     const unsub = subscribeToBattle(id, setBattle);
     return unsub;
   }, [id]);
