@@ -126,7 +126,7 @@ export default function AudioBattle({
         {secondsLeft !== null && (
           <p
             className={`font-data text-[13px] uppercase tracking-wider ${
-              lowTime ? "text-seal" : "text-ink-soft"
+              lowTime ? "text-signal" : "text-steel"
             }`}
           >
             {formatClock(secondsLeft)}
@@ -135,31 +135,31 @@ export default function AudioBattle({
       </div>
 
       {status === "connecting" && (
-        <p className="text-ink-soft text-[15px] mb-8">Connecting the call&hellip;</p>
+        <p className="text-steel text-[15px] mb-8">Connecting the call&hellip;</p>
       )}
       {status === "error" && (
-        <p className="text-seal text-[15px] mb-8">{errorMessage}</p>
+        <p className="text-signal text-[15px] mb-8">{errorMessage}</p>
       )}
 
       {status === "joined" && (
         <div className="flex items-center gap-10 mb-10">
           <div className="text-center">
-            <div className="w-20 h-20 rounded-full border-2 border-ink flex items-center justify-center mx-auto mb-2 font-display text-2xl">
+            <div className="w-20 h-20 rounded-full border-2 border-bone flex items-center justify-center mx-auto mb-2 font-display text-2xl">
               {profile.name.charAt(0)}
             </div>
-            <p className="font-data text-[11px] uppercase tracking-wider text-ink-soft">
+            <p className="font-data text-[11px] uppercase tracking-wider text-steel">
               You {muted && "(muted)"}
             </p>
           </div>
           <div className="text-center">
             <div
               className={`w-20 h-20 rounded-full border-2 flex items-center justify-center mx-auto mb-2 font-display text-2xl ${
-                opponentPresent ? "border-seal" : "border-rule text-ink-soft"
+                opponentPresent ? "border-signal" : "border-steel-line text-steel"
               }`}
             >
               {opponent?.name.charAt(0) ?? "?"}
             </div>
-            <p className="font-data text-[11px] uppercase tracking-wider text-ink-soft">
+            <p className="font-data text-[11px] uppercase tracking-wider text-steel">
               {opponentPresent ? opponent?.name ?? "Opponent" : "Waiting to join\u2026"}
             </p>
           </div>
@@ -170,7 +170,7 @@ export default function AudioBattle({
         {status === "joined" && (
           <button
             onClick={toggleMute}
-            className="font-data text-[13px] uppercase tracking-wider border border-ink px-6 py-3 hover:bg-ink hover:text-paper transition-colors"
+            className="font-data text-[13px] uppercase tracking-wider border border-bone px-6 py-3 hover:bg-bone hover:text-void transition-colors"
           >
             {muted ? "Unmute" : "Mute"}
           </button>

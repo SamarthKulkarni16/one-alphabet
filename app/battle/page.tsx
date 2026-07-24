@@ -131,17 +131,17 @@ export default function BattlePage() {
   if (!profile) {
     return (
       <div className="max-w-xl mx-auto px-6 py-20">
-        <p className="font-data text-[13px] uppercase tracking-wider text-seal mb-4">
+        <p className="font-data text-[13px] uppercase tracking-wider text-signal mb-4">
           Battle
         </p>
         <h1 className="font-display text-4xl mb-6">Register to battle.</h1>
-        <p className="text-ink-soft text-lg leading-relaxed mb-8">
+        <p className="text-steel text-lg leading-relaxed mb-8">
           You need a ranked profile before you can queue up or send a
           challenge.
         </p>
         <Link
           href="/join"
-          className="font-data text-[13px] uppercase tracking-wider bg-ink text-paper px-8 py-4 hover:bg-seal transition-colors"
+          className="font-data text-[13px] uppercase tracking-wider bg-bone text-void px-8 py-4 hover:bg-signal transition-colors"
         >
           Join the League
         </Link>
@@ -151,12 +151,12 @@ export default function BattlePage() {
 
   return (
     <div className="max-w-xl mx-auto px-6 py-20">
-      <p className="font-data text-[13px] uppercase tracking-wider text-seal mb-4">
+      <p className="font-data text-[13px] uppercase tracking-wider text-signal mb-4">
         Battle
       </p>
       <h1 className="font-display text-4xl mb-10">Find an opponent.</h1>
 
-      <div className="flex gap-px bg-rule border border-rule w-fit mb-6">
+      <div className="flex gap-px bg-steel-line border border-steel-line w-fit mb-6">
         {(["text", "audio"] as const).map((f) => (
           <button
             key={f}
@@ -166,8 +166,8 @@ export default function BattlePage() {
             disabled={inQueue}
             className={`font-data text-[13px] uppercase tracking-wider px-6 py-3 transition-colors disabled:cursor-not-allowed ${
               format === f
-                ? "bg-ink text-paper"
-                : "bg-paper text-ink-soft hover:text-ink"
+                ? "bg-bone text-void"
+                : "bg-void text-steel hover:text-bone"
             }`}
           >
             {f === "text" ? "Text Battle" : "Audio Battle"}
@@ -181,9 +181,9 @@ export default function BattlePage() {
           checked={isPrivate}
           disabled={inQueue}
           onChange={(e) => setIsPrivate(e.target.checked)}
-          className="mt-1 accent-seal disabled:cursor-not-allowed"
+          className="mt-1 accent-signal disabled:cursor-not-allowed"
         />
-        <span className="text-ink-soft text-[14px] leading-snug">
+        <span className="text-steel text-[14px] leading-snug">
           Keep this battle private
           <span className="block font-data text-[11px] uppercase tracking-wider mt-0.5">
             Won&rsquo;t appear in the archive or Watch Live
@@ -191,31 +191,31 @@ export default function BattlePage() {
         </span>
       </label>
 
-      <div className="border border-rule p-8 mb-12">
+      <div className="border border-steel-line p-8 mb-12">
         {inQueue ? (
           <div>
             <p className="font-display text-2xl mb-2">Finding an opponent&hellip;</p>
-            <p className="text-ink-soft text-[15px] mb-6">
+            <p className="text-steel text-[15px] mb-6">
               You&rsquo;ll be moved into the battle room automatically the
               moment someone else queues up for {format}
               {isPrivate ? ", also looking for a private match" : ""}.
             </p>
             <button
               onClick={handleLeaveQueue}
-              className="font-data text-[13px] uppercase tracking-wider border border-ink px-6 py-3 hover:bg-ink hover:text-paper transition-colors"
+              className="font-data text-[13px] uppercase tracking-wider border border-bone px-6 py-3 hover:bg-bone hover:text-void transition-colors"
             >
               Cancel
             </button>
           </div>
         ) : (
           <div>
-            <p className="text-ink-soft text-[15px] mb-6">
+            <p className="text-steel text-[15px] mb-6">
               Queue up for a random {format} battle, or challenge a specific
               player below.
             </p>
             <button
               onClick={handleJoinQueue}
-              className="font-data text-[13px] uppercase tracking-wider bg-ink text-paper px-8 py-4 hover:bg-seal transition-colors"
+              className="font-data text-[13px] uppercase tracking-wider bg-bone text-void px-8 py-4 hover:bg-signal transition-colors"
             >
               Join Queue
             </button>
@@ -225,34 +225,34 @@ export default function BattlePage() {
 
       {incoming.length > 0 && (
         <div className="mb-12">
-          <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-4">
+          <p className="font-data text-[12px] uppercase tracking-wider text-steel mb-4">
             Incoming Challenges
           </p>
-          <div className="space-y-px bg-rule border border-rule">
+          <div className="space-y-px bg-steel-line border border-steel-line">
             {incoming.map((c) => {
               const from = players.find((p) => p.id === c.challengerId);
               return (
                 <div
                   key={c.id}
-                  className="bg-paper p-4 flex items-center justify-between"
+                  className="bg-void p-4 flex items-center justify-between"
                 >
                   <div>
                     <p className="font-body text-[15px]">
                       {from?.name ?? "Unknown player"}
                     </p>
-                    <p className="font-data text-[11px] text-ink-soft uppercase tracking-wider">
+                    <p className="font-data text-[11px] text-steel uppercase tracking-wider">
                       {c.format} battle{c.isPrivate ? " \u00b7 private" : ""}                    </p>
                   </div>
                   <div className="flex gap-3">
                     <button
                       onClick={() => handleAccept(c.id)}
-                      className="font-data text-[12px] uppercase tracking-wider text-seal hover:underline"
+                      className="font-data text-[12px] uppercase tracking-wider text-signal hover:underline"
                     >
                       Accept
                     </button>
                     <button
                       onClick={() => declineChallenge(c.id).then(refreshChallenges)}
-                      className="font-data text-[12px] uppercase tracking-wider text-ink-soft hover:underline"
+                      className="font-data text-[12px] uppercase tracking-wider text-steel hover:underline"
                     >
                       Decline
                     </button>
@@ -266,28 +266,28 @@ export default function BattlePage() {
 
       {outgoing.length > 0 && (
         <div className="mb-12">
-          <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-4">
+          <p className="font-data text-[12px] uppercase tracking-wider text-steel mb-4">
             Sent Challenges
           </p>
-          <div className="space-y-px bg-rule border border-rule">
+          <div className="space-y-px bg-steel-line border border-steel-line">
             {outgoing.map((c) => {
               const to = players.find((p) => p.id === c.opponentId);
               return (
                 <div
                   key={c.id}
-                  className="bg-paper p-4 flex items-center justify-between"
+                  className="bg-void p-4 flex items-center justify-between"
                 >
                   <div>
                     <p className="font-body text-[15px]">
                       {to?.name ?? "Unknown player"}
                     </p>
-                    <p className="font-data text-[11px] text-ink-soft uppercase tracking-wider">
+                    <p className="font-data text-[11px] text-steel uppercase tracking-wider">
                       {c.format} battle{c.isPrivate ? " \u00b7 private" : ""} &middot; waiting
                     </p>
                   </div>
                   <button
                     onClick={() => cancelChallenge(c.id).then(refreshChallenges)}
-                    className="font-data text-[12px] uppercase tracking-wider text-ink-soft hover:underline"
+                    className="font-data text-[12px] uppercase tracking-wider text-steel hover:underline"
                   >
                     Cancel
                   </button>
@@ -299,7 +299,7 @@ export default function BattlePage() {
       )}
 
       <div>
-        <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-4">
+        <p className="font-data text-[12px] uppercase tracking-wider text-steel mb-4">
           Challenge a Player
         </p>
         <input
@@ -307,25 +307,25 @@ export default function BattlePage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by name or rank"
-          className="w-full bg-transparent border-b border-rule py-3 mb-2 focus:border-seal outline-none"
+          className="w-full bg-transparent border-b border-steel-line py-3 mb-2 focus:border-signal outline-none"
         />
         {challengeMessage && (
-          <p className="font-data text-[12px] text-seal mb-2">{challengeMessage}</p>
+          <p className="font-data text-[12px] text-signal mb-2">{challengeMessage}</p>
         )}
         {search && (
-          <div className="space-y-px bg-rule border border-rule max-h-64 overflow-y-auto">
+          <div className="space-y-px bg-steel-line border border-steel-line max-h-64 overflow-y-auto">
             {filteredPlayers.slice(0, 8).map((p) => (
               <button
                 key={p.id}
                 onClick={() => handleChallenge(p.id)}
-                className="w-full bg-paper p-4 flex items-center justify-between hover:bg-rule/20 transition-colors text-left"
+                className="w-full bg-void p-4 flex items-center justify-between hover:bg-steel-line/20 transition-colors text-left"
               >
                 <span className="font-body text-[15px]">{p.name}</span>
-                <span className="font-data text-[12px] text-ink-soft">{p.rank}</span>
+                <span className="font-data text-[12px] text-steel">{p.rank}</span>
               </button>
             ))}
             {filteredPlayers.length === 0 && (
-              <p className="bg-paper p-4 text-ink-soft text-[14px]">No players found.</p>
+              <p className="bg-void p-4 text-steel text-[14px]">No players found.</p>
             )}
           </div>
         )}

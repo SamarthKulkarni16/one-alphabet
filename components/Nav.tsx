@@ -29,21 +29,21 @@ export default function Nav() {
   }, []);
 
   return (
-    <header className="border-b border-rule">
+    <header className="border-b border-steel-line">
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           <Link
             href="/"
-            className="font-display text-lg tracking-tight text-ink"
+            className="font-display text-lg tracking-tight text-bone"
           >
             One Alphabet
           </Link>
-          <nav className="hidden md:flex items-center gap-8 font-data text-[13px] uppercase tracking-wider text-ink-soft">
+          <nav className="hidden md:flex items-center gap-8 font-data text-[13px] uppercase tracking-wider text-steel">
             {links.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
-                className="hover:text-seal transition-colors"
+                className="hover:text-signal transition-colors"
               >
                 {l.label}
               </Link>
@@ -51,7 +51,7 @@ export default function Nav() {
           </nav>
           <Link
             href="/join"
-            className="font-data text-[13px] uppercase tracking-wider border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors"
+            className="font-data text-[13px] uppercase tracking-wider border border-bone px-4 py-2 hover:bg-bone hover:text-void transition-colors"
           >
             {signedIn ? "Me" : "Join"}
           </Link>

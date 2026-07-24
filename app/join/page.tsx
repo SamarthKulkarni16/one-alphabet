@@ -118,7 +118,7 @@ export default function JoinPage() {
 
   return (
     <div className="max-w-xl mx-auto px-6 py-20">
-      <p className="font-data text-[13px] uppercase tracking-wider text-seal mb-4">
+      <p className="font-data text-[13px] uppercase tracking-wider text-signal mb-4">
         {profile ? "Your Profile" : "Register"}
       </p>
       <h1 className="font-display text-5xl mb-6">
@@ -127,31 +127,31 @@ export default function JoinPage() {
 
       {loading ? null : profile ? (
         <div>
-          <div className="border border-rule p-8 mb-8">
+          <div className="border border-steel-line p-8 mb-8">
             <div className="flex items-baseline gap-4 mb-2">
-              <span className="font-display text-5xl text-seal">
+              <span className="font-display text-5xl text-signal">
                 {profile.rank}
               </span>
-              <span className="font-data text-[13px] uppercase tracking-wider text-ink-soft">
+              <span className="font-data text-[13px] uppercase tracking-wider text-steel">
                 {profile.league}
               </span>
             </div>
-            <p className="font-data text-[12px] text-ink-soft mb-6">
+            <p className="font-data text-[12px] text-steel mb-6">
               At this rank for <TimeAtRank since={profile.rankSince} />
             </p>
-            <div className="grid grid-cols-3 gap-4 font-data text-[13px] text-ink-soft border-t border-rule pt-6">
+            <div className="grid grid-cols-3 gap-4 font-data text-[13px] text-steel border-t border-steel-line pt-6">
               <div>
-                <p className="text-ink text-lg">
+                <p className="text-bone text-lg">
                   {profile.wins}&ndash;{profile.losses}
                 </p>
                 <p>win&ndash;loss</p>
               </div>
               <div>
-                <p className="text-ink text-lg">{profile.judgedMatches}</p>
+                <p className="text-bone text-lg">{profile.judgedMatches}</p>
                 <p>judged</p>
               </div>
               <div>
-                <p className="text-ink text-lg">
+                <p className="text-bone text-lg">
                   {profile.judgedMatches >= 10 ? "Yes" : "Not yet"}
                 </p>
                 <p>flagship-eligible</p>
@@ -160,22 +160,22 @@ export default function JoinPage() {
           </div>
 
           <div className="mb-10">
-            <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-4">
+            <p className="font-data text-[12px] uppercase tracking-wider text-steel mb-4">
               Rank History
             </p>
-            <div className="space-y-px bg-rule border border-rule">
+            <div className="space-y-px bg-steel-line border border-steel-line">
               {rankHistory.map((h) => (
                 <div
                   key={h.id}
-                  className="bg-paper p-4 flex items-center justify-between"
+                  className="bg-void p-4 flex items-center justify-between"
                 >
                   <div className="flex items-baseline gap-3">
                     <span className="font-display text-xl">{h.rank}</span>
-                    <span className="font-data text-[11px] text-ink-soft uppercase tracking-wider">
+                    <span className="font-data text-[11px] text-steel uppercase tracking-wider">
                       {h.league}
                     </span>
                   </div>
-                  <span className="font-data text-[12px] text-ink-soft">
+                  <span className="font-data text-[12px] text-steel">
                     {h.endedAt ? (
                       <TimeAtRank since={h.startedAt} until={h.endedAt} />
                     ) : (
@@ -190,16 +190,16 @@ export default function JoinPage() {
           </div>
 
           <div className="mb-10">
-            <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-4">
+            <p className="font-data text-[12px] uppercase tracking-wider text-steel mb-4">
               Match History
             </p>
             {history.length === 0 ? (
-              <p className="text-ink-soft text-[15px]">
+              <p className="text-steel text-[15px]">
                 No matches yet &mdash; nothing recorded for you in the
                 archive so far.
               </p>
             ) : (
-              <div className="space-y-px bg-rule border border-rule">
+              <div className="space-y-px bg-steel-line border border-steel-line">
                 {history.map((m) => {
                   const isJudge = m.judgeId === profile.id;
                   const isReferee = m.refereeId === profile.id;
@@ -208,8 +208,8 @@ export default function JoinPage() {
                   const opponent = playerLookup.get(opponentId);
                   const wasWinner = m.winnerId === profile.id;
                   return (
-                    <div key={m.id} className="bg-paper p-5">
-                      <p className="font-data text-[11px] uppercase tracking-wider text-ink-soft mb-1">
+                    <div key={m.id} className="bg-void p-5">
+                      <p className="font-data text-[11px] uppercase tracking-wider text-steel mb-1">
                         {new Date(m.date).toLocaleDateString("en-GB", {
                           day: "2-digit",
                           month: "short",
@@ -228,7 +228,7 @@ export default function JoinPage() {
                       </p>
                       <p className="font-body text-[15px]">{m.topic}</p>
                       {!isJudge && !isReferee && opponent && (
-                        <p className="font-data text-[12px] text-ink-soft mt-1">
+                        <p className="font-data text-[12px] text-steel mt-1">
                           vs {opponent.name}
                         </p>
                       )}
@@ -241,15 +241,15 @@ export default function JoinPage() {
 
           <Link
             href="/rankings"
-            className="font-data text-[13px] uppercase tracking-wider text-seal hover:underline"
+            className="font-data text-[13px] uppercase tracking-wider text-signal hover:underline"
           >
             View on the Ladder &rarr;
           </Link>
 
-          <div className="mt-16 pt-6 border-t border-rule">
+          <div className="mt-16 pt-6 border-t border-steel-line">
             <button
               onClick={handleSignOut}
-              className="font-data text-[11px] text-ink-soft/50 hover:text-ink-soft transition-colors"
+              className="font-data text-[11px] text-steel/50 hover:text-steel transition-colors"
             >
               sign out
             </button>
@@ -257,23 +257,23 @@ export default function JoinPage() {
         </div>
       ) : session ? (
         <form onSubmit={handleRegister} className="space-y-8">
-          <p className="text-ink-soft text-lg leading-relaxed">
+          <p className="text-steel text-lg leading-relaxed">
             Everyone starts unranked, at the bottom of the alphabet leagues.
             No entry fee. One verified email, one rank.
           </p>
-          <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft">
+          <p className="font-data text-[12px] uppercase tracking-wider text-steel">
             Signed in as{" "}
-            <span className="text-ink">{session.user.email}</span>{" "}
+            <span className="text-bone">{session.user.email}</span>{" "}
             <button
               type="button"
               onClick={handleSignOut}
-              className="text-seal hover:underline normal-case ml-2"
+              className="text-signal hover:underline normal-case ml-2"
             >
               not you?
             </button>
           </p>
 
-          <div className="flex gap-px bg-rule border border-rule w-fit">
+          <div className="flex gap-px bg-steel-line border border-steel-line w-fit">
             {(["player", "judge"] as const).map((r) => (
               <button
                 type="button"
@@ -281,8 +281,8 @@ export default function JoinPage() {
                 onClick={() => setRole(r)}
                 className={`font-data text-[13px] uppercase tracking-wider px-6 py-3 transition-colors ${
                   role === r
-                    ? "bg-ink text-paper"
-                    : "bg-paper text-ink-soft hover:text-ink"
+                    ? "bg-bone text-void"
+                    : "bg-void text-steel hover:text-bone"
                 }`}
               >
                 {r}
@@ -291,32 +291,32 @@ export default function JoinPage() {
           </div>
 
           <label className="block">
-            <span className="font-data text-[12px] uppercase tracking-wider text-ink-soft">
+            <span className="font-data text-[12px] uppercase tracking-wider text-steel">
               Full name
             </span>
             <input
               required
               name="name"
               type="text"
-              className="w-full bg-transparent border-b border-rule py-3 mt-2 focus:border-seal outline-none"
+              className="w-full bg-transparent border-b border-steel-line py-3 mt-2 focus:border-signal outline-none"
             />
           </label>
 
           <label className="block">
-            <span className="font-data text-[12px] uppercase tracking-wider text-ink-soft">
+            <span className="font-data text-[12px] uppercase tracking-wider text-steel">
               Country
             </span>
             <input
               required
               name="country"
               type="text"
-              className="w-full bg-transparent border-b border-rule py-3 mt-2 focus:border-seal outline-none"
+              className="w-full bg-transparent border-b border-steel-line py-3 mt-2 focus:border-signal outline-none"
             />
           </label>
 
           <div className="grid grid-cols-2 gap-6">
             <label className="block">
-              <span className="font-data text-[12px] uppercase tracking-wider text-ink-soft">
+              <span className="font-data text-[12px] uppercase tracking-wider text-steel">
                 Age
               </span>
               <input
@@ -324,17 +324,17 @@ export default function JoinPage() {
                 type="number"
                 min={5}
                 max={120}
-                className="w-full bg-transparent border-b border-rule py-3 mt-2 focus:border-seal outline-none"
+                className="w-full bg-transparent border-b border-steel-line py-3 mt-2 focus:border-signal outline-none"
               />
             </label>
             <label className="block">
-              <span className="font-data text-[12px] uppercase tracking-wider text-ink-soft">
+              <span className="font-data text-[12px] uppercase tracking-wider text-steel">
                 Gender
               </span>
               <select
                 name="gender"
                 defaultValue=""
-                className="w-full bg-transparent border-b border-rule py-3 mt-2 focus:border-seal outline-none"
+                className="w-full bg-transparent border-b border-steel-line py-3 mt-2 focus:border-signal outline-none"
               >
                 <option value="">Prefer not to say</option>
                 <option value="female">Female</option>
@@ -344,13 +344,13 @@ export default function JoinPage() {
               </select>
             </label>
           </div>
-          <p className="font-data text-[11px] text-ink-soft -mt-4">
+          <p className="font-data text-[11px] text-steel -mt-4">
             Age and gender are kept private &mdash; never shown on the
             public Rankings or Archive.
           </p>
 
           {role === "judge" && (
-            <p className="font-data text-[12px] text-ink-soft border border-rule p-4">
+            <p className="font-data text-[12px] text-steel border border-steel-line p-4">
               Note: entry into either flagship tournament as a player still
               requires 10 judged matches, regardless of your judging
               application here.
@@ -358,32 +358,32 @@ export default function JoinPage() {
           )}
 
           {registerError && (
-            <p className="font-data text-[12px] text-seal">{registerError}</p>
+            <p className="font-data text-[12px] text-signal">{registerError}</p>
           )}
 
           <button
             type="submit"
             disabled={registering}
-            className="font-data text-[13px] uppercase tracking-wider bg-ink text-paper px-8 py-4 hover:bg-seal transition-colors disabled:opacity-50"
+            className="font-data text-[13px] uppercase tracking-wider bg-bone text-void px-8 py-4 hover:bg-signal transition-colors disabled:opacity-50"
           >
             {registering ? "Registering\u2026" : `Register as ${role}`}
           </button>
         </form>
       ) : (
         <div>
-          <p className="text-ink-soft text-lg leading-relaxed mb-12">
+          <p className="text-steel text-lg leading-relaxed mb-12">
             Everyone starts unranked, at the bottom of the alphabet leagues.
             No entry fee. One verified email, one rank.
           </p>
           {linkSent ? (
-            <div className="border border-rule p-8">
+            <div className="border border-steel-line p-8">
               <p className="font-display text-2xl mb-2">Check your inbox.</p>
-              <p className="text-ink-soft text-[15px]">{linkMessage}</p>
+              <p className="text-steel text-[15px]">{linkMessage}</p>
             </div>
           ) : (
             <form onSubmit={handleSendLink} className="space-y-6">
               <label className="block">
-                <span className="font-data text-[12px] uppercase tracking-wider text-ink-soft">
+                <span className="font-data text-[12px] uppercase tracking-wider text-steel">
                   Email
                 </span>
                 <input
@@ -392,19 +392,19 @@ export default function JoinPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full bg-transparent border-b border-rule py-3 mt-2 focus:border-seal outline-none"
+                  className="w-full bg-transparent border-b border-steel-line py-3 mt-2 focus:border-signal outline-none"
                 />
               </label>
-              <p className="font-data text-[12px] text-ink-soft">
+              <p className="font-data text-[12px] text-steel">
                 No password. We&rsquo;ll email you a one-time link to sign in.
               </p>
               {linkMessage && !linkSent && (
-                <p className="font-data text-[12px] text-seal">{linkMessage}</p>
+                <p className="font-data text-[12px] text-signal">{linkMessage}</p>
               )}
               <button
                 type="submit"
                 disabled={sendingLink}
-                className="font-data text-[13px] uppercase tracking-wider bg-ink text-paper px-8 py-4 hover:bg-seal transition-colors disabled:opacity-50"
+                className="font-data text-[13px] uppercase tracking-wider bg-bone text-void px-8 py-4 hover:bg-signal transition-colors disabled:opacity-50"
               >
                 {sendingLink ? "Sending\u2026" : "Send sign-in link"}
               </button>

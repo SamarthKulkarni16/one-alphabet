@@ -125,7 +125,7 @@ export default function WatchBattlePage() {
 
   if (!battle || (ended && !playerA)) {
     return (
-      <div className="min-h-screen surface-void">
+      <div>
         <div className="max-w-xl mx-auto px-6 py-20">
           <p className="font-versus font-extrabold uppercase text-3xl mb-4">
             Not live right now
@@ -139,7 +139,7 @@ export default function WatchBattlePage() {
   }
 
   return (
-    <div className="min-h-screen surface-void">
+    <div>
       <div className="max-w-2xl mx-auto px-6 py-20">
         <Link
           href="/watch"

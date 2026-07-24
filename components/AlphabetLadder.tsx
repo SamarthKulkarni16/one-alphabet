@@ -20,20 +20,20 @@ export default function AlphabetLadder({ compact = false }: { compact?: boolean 
             key={r}
             className={
               isOne
-                ? "text-seal font-medium"
+                ? "text-signal font-medium"
                 : isTwo
                 ? "text-brass"
-                : "text-ink-soft"
+                : "text-steel"
             }
           >
             {r}
             {i < rungs.length - 1 && (
-              <span className="text-rule mx-1.5">&rarr;</span>
+              <span className="text-steel-line mx-1.5">&rarr;</span>
             )}
           </span>
         );
       })}
-      <span className="text-ink-soft">&hellip;</span>
+      <span className="text-steel">&hellip;</span>
     </div>
   );
 }

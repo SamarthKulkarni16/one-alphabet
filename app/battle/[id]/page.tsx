@@ -60,7 +60,7 @@ export default function BattleRoomPage() {
     return (
       <div className="max-w-xl mx-auto px-6 py-20">
         <p className="font-display text-2xl mb-4">Battle not found.</p>
-        <Link href="/battle" className="font-data text-[13px] uppercase tracking-wider text-seal hover:underline">
+        <Link href="/battle" className="font-data text-[13px] uppercase tracking-wider text-signal hover:underline">
           &larr; Back to Battle
         </Link>
       </div>
@@ -78,10 +78,10 @@ export default function BattleRoomPage() {
 
   return (
     <div className="max-w-xl mx-auto px-6 py-20">
-      <p className="font-data text-[13px] uppercase tracking-wider text-seal mb-4">
+      <p className="font-data text-[13px] uppercase tracking-wider text-signal mb-4">
         {battle.format === "text" ? "Text Battle" : "Audio Battle"}
         {battle.isPrivate && (
-          <span className="ml-3 text-ink-soft">&middot; Private &mdash; won&rsquo;t be archived</span>
+          <span className="ml-3 text-steel">&middot; Private &mdash; won&rsquo;t be archived</span>
         )}
       </p>
       {opponent && (
@@ -95,10 +95,10 @@ export default function BattleRoomPage() {
         </div>
       )}
 
-      <div className={battle.status === "live" ? "" : "border border-rule p-8 mb-8"}>
+      <div className={battle.status === "live" ? "" : "border border-steel-line p-8 mb-8"}>
         {battle.status === "waiting" && (
           <div>
-            <p className="text-ink-soft text-[15px] mb-4">
+            <p className="text-steel text-[15px] mb-4">
               Both players need to confirm ready before this goes live.
               {battle.format === "text" && " Optionally set a topic first — either of you can."}
             </p>
@@ -109,13 +109,13 @@ export default function BattleRoomPage() {
                   value={topicDraft}
                   onChange={(e) => setTopicDraft(e.target.value)}
                   placeholder={battle.topic ?? "e.g. Should remote work be the default?"}
-                  className="flex-1 bg-transparent border-b border-rule py-2 focus:border-seal outline-none text-[15px]"
+                  className="flex-1 bg-transparent border-b border-steel-line py-2 focus:border-signal outline-none text-[15px]"
                 />
                 <button
                   onClick={() => {
                     if (topicDraft.trim()) setBattleTopic(battle.id, topicDraft.trim());
                   }}
-                  className="font-data text-[12px] uppercase tracking-wider text-ink-soft hover:text-seal transition-colors"
+                  className="font-data text-[12px] uppercase tracking-wider text-steel hover:text-signal transition-colors"
                 >
                   Set
                 </button>
@@ -123,7 +123,7 @@ export default function BattleRoomPage() {
             )}
             <button
               onClick={() => markBattleLive(battle.id)}
-              className="font-data text-[13px] uppercase tracking-wider bg-ink text-paper px-8 py-4 hover:bg-seal transition-colors"
+              className="font-data text-[13px] uppercase tracking-wider bg-bone text-void px-8 py-4 hover:bg-signal transition-colors"
             >
               I&rsquo;m Ready
             </button>
@@ -140,7 +140,7 @@ export default function BattleRoomPage() {
             <p className="font-display text-2xl mb-2">Battle ended.</p>
             <Link
               href="/battle"
-              className="font-data text-[13px] uppercase tracking-wider text-seal hover:underline"
+              className="font-data text-[13px] uppercase tracking-wider text-signal hover:underline"
             >
               Find another opponent &rarr;
             </Link>

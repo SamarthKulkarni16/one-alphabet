@@ -82,7 +82,7 @@ export default function MatchPage() {
     return (
       <div className="max-w-xl mx-auto px-6 py-20">
         <p className="font-display text-2xl mb-4">Match not found.</p>
-        <Link href="/archive" className="font-data text-[13px] uppercase tracking-wider text-seal hover:underline">
+        <Link href="/archive" className="font-data text-[13px] uppercase tracking-wider text-signal hover:underline">
           &larr; Back to Archive
         </Link>
       </div>
@@ -107,12 +107,12 @@ export default function MatchPage() {
     <div className="max-w-3xl mx-auto px-6 py-20">
       <Link
         href="/archive"
-        className="font-data text-[13px] uppercase tracking-wider text-seal hover:underline"
+        className="font-data text-[13px] uppercase tracking-wider text-signal hover:underline"
       >
         &larr; Archive
       </Link>
 
-      <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mt-8 mb-2">
+      <p className="font-data text-[12px] uppercase tracking-wider text-steel mt-8 mb-2">
         {match.tournament ? `${match.tournament} \u00b7 ` : ""}
         {match.league}
         {" \u00b7 "}
@@ -124,21 +124,21 @@ export default function MatchPage() {
       </p>
       <h1 className="font-display text-4xl mb-8">{match.topic}</h1>
 
-      <div className="flex flex-wrap items-center gap-x-8 gap-y-3 mb-8 font-data text-[13px] text-ink-soft border-y border-rule py-5">
+      <div className="flex flex-wrap items-center gap-x-8 gap-y-3 mb-8 font-data text-[13px] text-steel border-y border-steel-line py-5">
         <span>
           {a?.rank} {a?.name}
-          {winner?.id === a?.id && <span className="text-seal ml-1">&#9679; won</span>}
+          {winner?.id === a?.id && <span className="text-signal ml-1">&#9679; won</span>}
         </span>
-        <span className="text-rule">vs</span>
+        <span className="text-steel-line">vs</span>
         <span>
           {b?.rank} {b?.name}
-          {winner?.id === b?.id && <span className="text-seal ml-1">&#9679; won</span>}
+          {winner?.id === b?.id && <span className="text-signal ml-1">&#9679; won</span>}
         </span>
         {!match.winnerId && <span className="italic">undecided</span>}
         {judge && <span>Judged by {judge.name}</span>}
       </div>
 
-      <p className="text-ink-soft text-[16px] leading-relaxed mb-4 max-w-2xl">
+      <p className="text-steel text-[16px] leading-relaxed mb-4 max-w-2xl">
         {match.aiSummary || (
           <span className="italic">
             {match.judgeStatus === "judging" || judging
@@ -153,24 +153,24 @@ export default function MatchPage() {
       {!match.aiSummary && signedIn && !judging && (
         <button
           onClick={() => runJudging(match.id, MAX_AUTO_RETRIES)}
-          className="font-data text-[12px] uppercase tracking-wider text-seal hover:underline mb-10 block"
+          className="font-data text-[12px] uppercase tracking-wider text-signal hover:underline mb-10 block"
         >
           {match.judgeStatus === "failed" ? "Retry Judging" : "Judge This Match Now"}
         </button>
       )}
       {!match.aiSummary && !signedIn && (
-        <p className="font-data text-[12px] text-ink-soft mb-10">
-          <Link href="/join" className="text-seal hover:underline">Sign in</Link> to trigger AI judging.
+        <p className="font-data text-[12px] text-steel mb-10">
+          <Link href="/join" className="text-signal hover:underline">Sign in</Link> to trigger AI judging.
         </p>
       )}
       {match.aiSummary && <div className="mb-6" />}
 
       {match.judgeReasoning && (
         <div className="mb-10">
-          <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-4">
+          <p className="font-data text-[12px] uppercase tracking-wider text-steel mb-4">
             Judge&rsquo;s Reasoning
           </p>
-          <p className="text-ink-soft text-[15px] leading-relaxed max-w-2xl border-l-2 border-seal pl-6">
+          <p className="text-steel text-[15px] leading-relaxed max-w-2xl border-l-2 border-signal pl-6">
             {match.judgeReasoning}
           </p>
         </div>
@@ -181,7 +181,7 @@ export default function MatchPage() {
           {match.tags.map((tag) => (
             <span
               key={tag}
-              className="font-data text-[11px] uppercase tracking-wider text-ink-soft border border-rule px-2 py-1"
+              className="font-data text-[11px] uppercase tracking-wider text-steel border border-steel-line px-2 py-1"
             >
               {tag}
             </span>
@@ -191,14 +191,14 @@ export default function MatchPage() {
 
       {transcriptLines.length > 0 && (
         <div>
-          <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-4">
+          <p className="font-data text-[12px] uppercase tracking-wider text-steel mb-4">
             Transcript
           </p>
-          <div className="border border-rule p-8 space-y-5">
+          <div className="border border-steel-line p-8 space-y-5">
             {transcriptLines.map((line, i) => (
               <div key={i}>
                 {line.speaker && (
-                  <p className="font-data text-[11px] uppercase tracking-wider text-ink-soft mb-1">
+                  <p className="font-data text-[11px] uppercase tracking-wider text-steel mb-1">
                     {line.speaker}
                   </p>
                 )}
@@ -211,7 +211,7 @@ export default function MatchPage() {
 
       {match.tags.includes("audio") && (
         <div>
-          <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-4">
+          <p className="font-data text-[12px] uppercase tracking-wider text-steel mb-4">
             Recording
           </p>
           {recordingLink ? (
@@ -220,13 +220,13 @@ export default function MatchPage() {
             <button
               onClick={loadRecording}
               disabled={recordingState === "loading"}
-              className="font-data text-[13px] uppercase tracking-wider bg-ink text-paper px-6 py-3 hover:bg-seal transition-colors disabled:opacity-40"
+              className="font-data text-[13px] uppercase tracking-wider bg-bone text-void px-6 py-3 hover:bg-signal transition-colors disabled:opacity-40"
             >
               {recordingState === "loading" ? "Loading\u2026" : "Load Recording"}
             </button>
           )}
           {recordingState === "error" && (
-            <p className="text-ink-soft text-[14px] italic mt-2">
+            <p className="text-steel text-[14px] italic mt-2">
               Recording isn&rsquo;t ready yet &mdash; Daily can take a minute
               or two to finish processing after the call ends. Try again shortly.
             </p>
@@ -235,7 +235,7 @@ export default function MatchPage() {
       )}
 
       {!match.transcript && !match.tags.includes("audio") && (
-        <p className="text-ink-soft text-[15px] italic">
+        <p className="text-steel text-[15px] italic">
           No transcript recorded for this match yet.
         </p>
       )}

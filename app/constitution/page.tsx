@@ -56,11 +56,11 @@ const sections = [
 export default function ConstitutionPage() {
   return (
     <div className="max-w-3xl mx-auto px-6 py-20">
-      <p className="font-data text-[13px] uppercase tracking-wider text-seal mb-4">
+      <p className="font-data text-[13px] uppercase tracking-wider text-signal mb-4">
         The Constitution
       </p>
       <h1 className="font-display text-5xl mb-6">Timeless, not detailed.</h1>
-      <p className="text-ink-soft text-lg leading-relaxed mb-16 max-w-xl">
+      <p className="text-steel text-lg leading-relaxed mb-16 max-w-xl">
         This document holds only the principles that shouldn&rsquo;t change.
         Everything else &mdash; scoring detail, topic selection, edge cases
         &mdash; lives in a rulebook built to evolve.
@@ -70,12 +70,12 @@ export default function ConstitutionPage() {
         {sections.map((s) => (
           <div
             key={s.n}
-            className="grid grid-cols-[3.5rem_1fr] gap-6 border-t border-rule pt-8"
+            className="grid grid-cols-[3.5rem_1fr] gap-6 border-t border-steel-line pt-8"
           >
-            <span className="font-data text-seal text-sm pt-1">{s.n}</span>
+            <span className="font-data text-signal text-sm pt-1">{s.n}</span>
             <div>
               <h2 className="font-display text-2xl mb-3">{s.title}</h2>
-              <p className="text-ink-soft leading-relaxed text-[15px]">
+              <p className="text-steel leading-relaxed text-[15px]">
                 {s.body}
               </p>
             </div>

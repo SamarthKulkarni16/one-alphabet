@@ -26,7 +26,7 @@ export default function WatchPage() {
   }, []);
 
   return (
-    <div className="min-h-screen surface-void">
+    <div>
       <div className="max-w-5xl mx-auto px-6 py-20">
         <p className="font-data text-[13px] uppercase tracking-wider text-signal mb-4">
           Right Now

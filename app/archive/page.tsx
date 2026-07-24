@@ -13,11 +13,11 @@ export default async function ArchivePage() {
   const getPlayer = (id: string) => playerLookup.get(id);
   return (
     <div className="max-w-5xl mx-auto px-6 py-20">
-      <p className="font-data text-[13px] uppercase tracking-wider text-seal mb-4">
+      <p className="font-data text-[13px] uppercase tracking-wider text-signal mb-4">
         The Record
       </p>
       <h1 className="font-display text-5xl mb-6">Archive</h1>
-      <p className="text-ink-soft text-lg leading-relaxed mb-6 max-w-xl">
+      <p className="text-steel text-lg leading-relaxed mb-6 max-w-xl">
         Every official match, kept. Video, transcript, and an AI summary of
         how the argument actually turned.
       </p>
@@ -26,18 +26,18 @@ export default async function ArchivePage() {
         <input
           type="text"
           placeholder="Search by topic, player, or tag&hellip;"
-          className="w-full max-w-md font-data text-sm bg-transparent border-b border-rule py-3 focus:border-seal outline-none placeholder:text-ink-soft"
+          className="w-full max-w-md font-data text-sm bg-transparent border-b border-steel-line py-3 focus:border-signal outline-none placeholder:text-steel"
           disabled
         />
-        <p className="font-data text-[11px] text-ink-soft mt-2">
+        <p className="font-data text-[11px] text-steel mt-2">
           Search activates once the archive connects to live data.
         </p>
       </div>
 
-      <div className="space-y-px bg-rule border border-rule">
+      <div className="space-y-px bg-steel-line border border-steel-line">
         {matches.length === 0 && (
-          <div className="bg-paper p-8 text-center">
-            <p className="text-ink-soft text-[15px]">
+          <div className="bg-void p-8 text-center">
+            <p className="text-steel text-[15px]">
               No matches recorded yet — check back once the first official
               debates are played.
             </p>
@@ -51,17 +51,17 @@ export default async function ArchivePage() {
             <Link
               key={m.id}
               href={`/matches/${m.id}`}
-              className="block bg-paper p-8 relative overflow-hidden hover:bg-rule/10 transition-colors"
+              className="block bg-void p-8 relative overflow-hidden hover:bg-steel-line/10 transition-colors"
             >
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
                 <div>
-                  <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-2">
+                  <p className="font-data text-[12px] uppercase tracking-wider text-steel mb-2">
                     {m.tournament ? `${m.tournament} \u00b7 ` : ""}
                     {m.league}
                   </p>
                   <h2 className="font-display text-2xl max-w-xl">{m.topic}</h2>
                 </div>
-                <p className="font-data text-[12px] text-ink-soft whitespace-nowrap">
+                <p className="font-data text-[12px] text-steel whitespace-nowrap">
                   {new Date(m.date).toLocaleDateString("en-GB", {
                     day: "2-digit",
                     month: "short",
@@ -70,7 +70,7 @@ export default async function ArchivePage() {
                 </p>
               </div>
 
-              <p className="text-ink-soft text-[15px] leading-relaxed mb-5 max-w-2xl">
+              <p className="text-steel text-[15px] leading-relaxed mb-5 max-w-2xl">
                 {m.aiSummary || (
                   <span className="italic">
                     {m.judgeStatus === "judging"
@@ -93,7 +93,7 @@ export default async function ArchivePage() {
                   />
                 </div>
               )}
-              <div className="flex flex-wrap items-center gap-x-8 gap-y-2 mb-5 font-data text-[12px] text-ink-soft">
+              <div className="flex flex-wrap items-center gap-x-8 gap-y-2 mb-5 font-data text-[12px] text-steel">
                 {!m.winnerId && m.judgeStatus === "judged" && (
                   <span className="italic">tie</span>
                 )}
@@ -104,14 +104,14 @@ export default async function ArchivePage() {
                 {m.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="font-data text-[11px] uppercase tracking-wider text-ink-soft border border-rule px-2 py-1"
+                    className="font-data text-[11px] uppercase tracking-wider text-steel border border-steel-line px-2 py-1"
                   >
                     {tag}
                   </span>
                 ))}
               </div>
 
-              <span className="absolute top-6 right-8 font-display text-seal text-xs uppercase tracking-widest border border-seal rounded-full w-16 h-16 flex items-center justify-center rotate-12 opacity-70 select-none hidden md:flex">
+              <span className="absolute top-6 right-8 font-display text-signal text-xs uppercase tracking-widest border border-signal rounded-full w-16 h-16 flex items-center justify-center rotate-12 opacity-70 select-none hidden md:flex">
                 Case {m.id.slice(0, 4)}
               </span>
             </Link>

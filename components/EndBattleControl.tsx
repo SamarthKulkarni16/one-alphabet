@@ -33,7 +33,7 @@ export default function EndBattleControl({
 
   if (requestedByOpponent) {
     return (
-      <div className="border border-seal p-4">
+      <div className="border border-signal p-4">
         <p className="text-[14px] mb-3">
           {opponent?.name ?? "Your opponent"} wants to end the battle early.
         </p>
@@ -41,14 +41,14 @@ export default function EndBattleControl({
           <button
             onClick={handleRequest}
             disabled={busy}
-            className="font-data text-[12px] uppercase tracking-wider text-seal hover:underline disabled:opacity-40"
+            className="font-data text-[12px] uppercase tracking-wider text-signal hover:underline disabled:opacity-40"
           >
             Agree &amp; End
           </button>
           <button
             onClick={handleCancel}
             disabled={busy}
-            className="font-data text-[12px] uppercase tracking-wider text-ink-soft hover:underline disabled:opacity-40"
+            className="font-data text-[12px] uppercase tracking-wider text-steel hover:underline disabled:opacity-40"
           >
             Decline
           </button>
@@ -60,13 +60,13 @@ export default function EndBattleControl({
   if (requestedByMe) {
     return (
       <div>
-        <p className="font-data text-[12px] uppercase tracking-wider text-ink-soft mb-2">
+        <p className="font-data text-[12px] uppercase tracking-wider text-steel mb-2">
           Waiting for {opponent?.name ?? "your opponent"} to confirm ending&hellip;
         </p>
         <button
           onClick={handleCancel}
           disabled={busy}
-          className="font-data text-[12px] uppercase tracking-wider text-ink-soft hover:text-seal transition-colors disabled:opacity-40"
+          className="font-data text-[12px] uppercase tracking-wider text-steel hover:text-signal transition-colors disabled:opacity-40"
         >
           Cancel Request
         </button>
@@ -78,7 +78,7 @@ export default function EndBattleControl({
     <button
       onClick={handleRequest}
       disabled={busy}
-      className="font-data text-[12px] uppercase tracking-wider text-ink-soft hover:text-seal transition-colors disabled:opacity-40"
+      className="font-data text-[12px] uppercase tracking-wider text-steel hover:text-signal transition-colors disabled:opacity-40"
     >
       End battle early
     </button>

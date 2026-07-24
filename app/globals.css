@@ -60,26 +60,26 @@
 }
 
 * {
-  scrollbar-color: var(--ink-soft) var(--paper-dim);
+  scrollbar-color: var(--steel) var(--void);
 }
 
 html {
-  background: var(--paper);
+  background: var(--void);
 }
 
 body {
-  background: var(--paper);
-  color: var(--ink);
+  background: var(--void);
+  color: var(--bone);
   font-family: var(--font-body);
 }
 
 ::selection {
-  background: var(--seal);
-  color: var(--paper);
+  background: var(--signal);
+  color: var(--bone);
 }
 
 :focus-visible {
-  outline: 2px solid var(--seal);
+  outline: 2px solid var(--signal);
   outline-offset: 2px;
 }
 

@@ -80,7 +80,7 @@ export default function TextBattle({
         {secondsLeft !== null && (
           <p
             className={`font-data text-[13px] uppercase tracking-wider ${
-              lowTime ? "text-seal" : "text-ink-soft"
+              lowTime ? "text-signal" : "text-steel"
             }`}
           >
             {formatClock(secondsLeft)}
@@ -90,10 +90,10 @@ export default function TextBattle({
 
       <div
         ref={scrollRef}
-        className="border border-rule h-96 overflow-y-auto p-6 space-y-4 mb-4"
+        className="border border-steel-line h-96 overflow-y-auto p-6 space-y-4 mb-4"
       >
         {turns.length === 0 && (
-          <p className="text-ink-soft text-[14px]">
+          <p className="text-steel text-[14px]">
             No messages yet &mdash; make the opening move.
           </p>
         )}
@@ -101,12 +101,12 @@ export default function TextBattle({
           const mine = t.playerId === profile.id;
           return (
             <div key={t.id} className={mine ? "text-right" : "text-left"}>
-              <p className="font-data text-[11px] uppercase tracking-wider text-ink-soft mb-1">
+              <p className="font-data text-[11px] uppercase tracking-wider text-steel mb-1">
                 {mine ? "You" : opponent?.name ?? "Opponent"}
               </p>
               <p
                 className={`inline-block text-left text-[15px] leading-relaxed max-w-[80%] px-4 py-2 ${
-                  mine ? "bg-ink text-paper" : "bg-rule/20 text-ink"
+                  mine ? "bg-bone text-void" : "bg-steel-line/20 text-bone"
                 }`}
               >
                 {t.content}
@@ -128,12 +128,12 @@ export default function TextBattle({
           }}
           placeholder=""
           rows={2}
-          className="flex-1 bg-transparent border border-rule p-3 text-[15px] focus:border-seal outline-none resize-none"
+          className="flex-1 bg-transparent border border-steel-line p-3 text-[15px] focus:border-signal outline-none resize-none"
         />
         <button
           onClick={handleSend}
           disabled={!draft.trim() || sending}
-          className="font-data text-[13px] uppercase tracking-wider bg-ink text-paper px-6 hover:bg-seal transition-colors disabled:opacity-40"
+          className="font-data text-[13px] uppercase tracking-wider bg-bone text-void px-6 hover:bg-signal transition-colors disabled:opacity-40"
         >
           Send
         </button>
